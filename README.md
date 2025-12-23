@@ -1,13 +1,8 @@
-BEGIN
-  FOR obj IN (
-    SELECT object_name
-    FROM dba_objects
-    WHERE owner = 'PSERP_R'
-      AND object_type IN ('TABLE', 'VIEW')
+LISTENER =
+  (DESCRIPTION_LIST =
+    (DESCRIPTION =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = your-hostname-or-ip)(PORT = 1521))
+    )
   )
-  LOOP
-    EXECUTE IMMEDIATE
-      'GRANT SELECT ON PSERP_R.' || obj.object_name || ' TO PSERP_R_READ_ROLE';
-  END LOOP;
-END;
-/
+
+ADR_BASE_LISTENER = /u01/app/oracle
