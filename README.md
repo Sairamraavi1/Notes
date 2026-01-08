@@ -1,74 +1,55 @@
-1. Pre-Activity Safeguards
+Object and Row Count Verification
 
-Titan database is fully protected by Oracle Data Guard prior to activity.
+Validate that all 160 SAP tables specified in the export list are included.
 
-No DDL or data modifications are performed on SAP ECC Production.
+Perform spot-check row counts for a representative subset of tables.
 
-ADG pause/resume steps are pre-validated and reversible.
+Confirm exported object count matches the defined table list.
 
-Export is read-only from a data perspective.
+Pass Criteria:
 
-2. Backout During Export (Failure Scenario)
+All expected tables are present in the export.
 
-If the Data Pump export fails or encounters errors:
+Row counts are within expected variance for sampled tables.
 
-Stop the running export job.
+3. Import Readiness Validation (Cascade)
 
-Review Data Pump log files to identify failure cause.
+Validate dump files are accessible from Cascade.
 
-Remove any partially generated dump files from the export directory.
+Ensure sufficient disk space and permissions for import.
 
-Fix the identified issue (space, permissions, parameter correction).
+Confirm no corruption or access issues with dump files.
 
-Re-run the export once the issue is resolved.
+Pass Criteria:
 
-Impact:
-No impact to source data. No backout required at application level.
+Dump files are readable and accessible.
 
-3. Backout for ADG / Replication Issues
+No file system or permission errors.
 
-If ADG replication does not resume successfully after export:
+4. ADG Replication Validation
 
-Restart Managed Recovery Process (MRP) on the standby database.
+Confirm ADG replication is re-enabled post-export.
 
-Verify redo transport and apply status (gap = 0).
+Validate redo transport and apply are functioning normally.
 
-Review alert logs on both primary and standby.
+Verify no redo apply gap exists between primary and standby.
 
-If required, re-enable archive destinations and force log switch.
+Pass Criteria:
 
-Confirm standby database is fully synchronized before closing activity.
+Managed Recovery Process (MRP) is running.
 
-Ownership:
+Redo apply gap = 0.
 
-DBA Team (Sai) – ADG operations and validation
+No replication-related errors in alert logs.
 
-Ops Team (Ravi / Nikhil) – Infrastructure and monitoring support
+Test Completion Criteria
 
-4. Database State Restoration
+Testing is considered complete when:
 
-Ensure Titan database is restored to its original operational state (ADG enabled).
+Export is successful and validated.
 
-Confirm database access is returned to normal operating mode.
+Dump files are verified and ready for import.
 
-No data restore is required since no data changes are performed.
+ADG replication is fully restored and synchronized.
 
-5. Exit Criteria / Backout Completion
-
-Backout is considered complete when:
-
-ADG replication is fully active and caught up.
-
-No redo apply gaps exist.
-
-No partial or orphaned dump files remain.
-
-Database alert logs are clean of export-related errors.
-
-6. Business Impact Statement
-
-No end-user or application impact.
-
-No downtime required.
-
-Source system data remains unchanged throughout the activity.
+No database or replication errors remain.
