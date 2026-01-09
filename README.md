@@ -16,3 +16,9 @@ SELECT dbusername,
 FROM   unified_audit_trail
 WHERE  return_code = 1017
 ORDER  BY event_timestamp DESC;
+
+
+cd /oracle/VE1/saptrace/audit
+
+find . -name "*.aud" -newermt "2026-01-08 14:00" ! -newermt "2026-01-08 15:00" -print | xargs -r grep -i "ORA-1017"
+
