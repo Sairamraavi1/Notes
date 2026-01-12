@@ -22,3 +22,15 @@ cd /oracle/VE1/saptrace/audit
 
 find . -name "*.aud" -newermt "2026-01-08 14:00" ! -newermt "2026-01-08 15:00" -print | xargs -r grep -i "ORA-1017"
 
+
+-- On STANDBY (0052) as sysdba
+ALTER DATABASE RECOVER MANAGED STANDBY DATABASE CANCEL;
+
+ALTER DATABASE CREATE DATAFILE
+  '/oracle/VPR/19/dbs/UNNAMED03212'
+AS
+  '/oracle/VPR/sapdata10/erpus?_236/erpus?.data236';
+
+ALTER DATABASE RECOVER MANAGED STANDBY DATABASE USING CURRENT LOGFILE DISCONNECT;
+
+
