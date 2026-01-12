@@ -1,18 +1,9 @@
 set lines 200 pages 200
-col name format a80
-select file#, name
-from   v$datafile
-where  name like '%UNNAMED%'
-order  by file#;
+col name format a90
 
-
-set lines 200 pages 200
-col file_name format a90
-
-SELECT file_id,
-       file_name,
+SELECT file#,
+       name,
        creation_time
-FROM   dba_data_files
+FROM   v$datafile
 WHERE  creation_time >= DATE '2026-01-10'
 ORDER  BY creation_time;
-
