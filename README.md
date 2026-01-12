@@ -31,6 +31,18 @@ ALTER DATABASE CREATE DATAFILE
 AS
   '/oracle/VPR/sapdata10/erpus?_236/erpus?.data236';
 
+
+
+
+
+  set lines 200 pages 200
+col name format a80
+select file#, name
+from   v$datafile
+where  name like '%UNNAMED%'
+order  by file#;
+
+
 ALTER DATABASE RECOVER MANAGED STANDBY DATABASE USING CURRENT LOGFILE DISCONNECT;
 
 
