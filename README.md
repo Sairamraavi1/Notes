@@ -7,3 +7,9 @@ SELECT file#,
 FROM   v$datafile
 WHERE  creation_time >= DATE '2026-01-10'
 ORDER  BY creation_time;
+
+
+select file#, name, creation_time
+from v$datafile
+where creation_time >= DATE '2026-01-10'
+order by creation_time;
