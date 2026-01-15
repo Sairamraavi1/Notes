@@ -1,8 +1,2 @@
-impdp "/ as sysdba" \
-  DIRECTORY=DATA_PUMP_DIR \
-  DUMPFILE=expdp_pserp_tables_%U.dmp \
-  LOGFILE=impdp_pserp_tables_ZTMO_UPSTRACKING.log \
-  PARALLEL=8 \
-  TABLES=PSERP_R.ZTMO_UPSTRACKING \
-  REMAP_SCHEMA=PSERP_R:PSERP_M \
-  TABLE_EXISTS_ACTION=TRUNCATE
+grep -n "Completed: alter database flashback on" alert_PSERP.log
+grep -n "alter database flashback on" alert_PSERP.log
