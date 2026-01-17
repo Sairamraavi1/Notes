@@ -1,64 +1,34 @@
-grep -n "Completed: alter database flashback on" alert_PSERP.log
-grep -n "alter database flashback on" alert_PSERP.log
+tail -200 impdp_set6_tables.log
+grep -i "ORA-" impdp_set6_tables.log | tail -50
+tail -200 nohup.out
 
 
-grep -n -B2 -A5 "alter database flashback on" alert_PSERP.log
+select group#, thread#, bytes/1024/1024 as mb, status, archived, sequence#
+from v$log
+order by group#;
 
-TRANSFORM=DISABLE_ARCHIVE_LOGGING:Y
-
-
-SELECT tablespace_name, file_id, file_name, status
-FROM dba_temp_files
-ORDER BY file_id;
+select group#, member from v$logfile order by group#, member;
 
 
-ALTER TABLESPACE TEMP DROP TEMPFILE
-'/oracle/VPR/sapdata1/temp_1/temp.data1';
+select event, total_waits, time_waited/100 as seconds
+from v$system_event
+where event in ('log file switch (checkpoint incomplete)',
+                'log file switch (archiving needed)',
+                'log file sync',
+                'log file parallel write')
+order by seconds desc;
 
 
-ALTER TABLESPACE TEMP ADD TEMPFILE
-'/oracle/VPR/sapdata1/temp_1/temp01.dbf'
-SIZE 50G
-AUTOEXTEND ON NEXT 1G MAXSIZE UNLIMITED;
+select * from v$recovery_file_dest;
+
+select dest_id, status, error, destination
+from v$archive_dest_status
+where status <> 'VALID';
 
 
-SELECT
-  tablespace_name,
-  ROUND(used_blocks * t.block_size / 1024 / 1024 / 1024, 2) AS used_gb,
-  ROUND(free_blocks * t.block_size / 1024 / 1024 / 1024, 2) AS free_gb
-FROM v$temp_space_header h
-JOIN dba_tablespaces t
-  ON h.tablespace_name = t.tablespace_name;
-
-SELECT
-  tablespace_name,
-  ROUND(SUM(bytes)/1024/1024/1024,2) AS total_gb
-FROM dba_temp_files
-GROUP BY tablespace_name;
+select directory_name, directory_path from dba_directories
+where directory_name in ('DIR1','DIR2');
 
 
-SELECT
-  tablespace_name,
-  ROUND(SUM(bytes_cached)/1024/1024/1024,2) AS used_gb
-FROM v$temp_extent_pool
-GROUP BY tablespace_name;
-
-
-
-SELECT
-  s.sid,
-  s.serial#,
-  s.username,
-  u.tablespace,
-  ROUND(u.blocks * t.block_size / 1024 / 1024 / 1024, 2) AS used_gb
-FROM v$sort_usage u
-JOIN v$session s ON u.session_addr = s.saddr
-JOIN dba_tablespaces t ON u.tablespace = t.tablespace_name
-ORDER BY used_gb DESC;
-
-
-
-SELECT tablespace_name, file_name, bytes/1024/1024/1024 GB, autoextensible
-FROM dba_temp_files;
-
-
+ls -lh <dir1_path>/expdp_165tables_*.dmp | head
+ls -lh <dir2_path>/expdp_165tables_*.dmp | head
