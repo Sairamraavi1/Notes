@@ -19,3 +19,8 @@ AND status='ENABLED';
 
 Use correct EZCONNECT string
 sqlplus user@"//pttnasvpr00052.unix.gsm1900.org:1527/PSERP"
+
+
+ALTER USER SVC_PRD_ALTERYX IDENTIFIED BY Welcome123;
+
+ALTER USER SVC_PRD_ALTERYX IDENTIFIED BY <final-secure-password>;
