@@ -24,3 +24,16 @@ select *
 from table(dbms_xplan.display_cursor('06sn3t8w5j5rd', 0, 'ALLSTATS LAST'));
 
 
+-- confirm what SQL is running *right now* in that session
+select s.sid, s.serial#, s.username, s.status,
+       s.sql_id, s.sql_child_number,
+       q.sql_text
+from v$session s
+join v$sqlarea q on q.sql_id = s.sql_id
+where s.sid = 1039;
+
+
+select piece, sql_text
+from v$sqltext
+where sql_id = (select sql_id from v$session where sid = 1039)
+order by piece;
