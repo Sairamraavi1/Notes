@@ -19,3 +19,8 @@ where sql_id = '06sn3t8w5j5rd';
 select *
 from table(dbms_xplan.display_cursor('06sn3t8w5j5rd', CHILD_NUMBER_HERE, 'ALLSTATS LAST'));
 
+
+select *
+from table(dbms_xplan.display_cursor('06sn3t8w5j5rd', 0, 'ALLSTATS LAST'));
+
+
