@@ -1,24 +1,12 @@
-select constraint_name, status
-from dba_constraints
-where owner='PSERP_R'
-  and table_name='VBAK'
-  and constraint_type='P';
+select sid, serial#, sql_id, event, wait_class
+from v$session
+where username = 'NODONOG1'
+and status = 'ACTIVE';
 
 
-select cc.constraint_name, cc.column_name, cc.position
-from dba_cons_columns cc
-where cc.owner='PSERP_R'
-  and cc.table_name='VBAK'
-  and cc.constraint_name = '<PK_NAME>'
-order by cc.position;
+select * 
+from table(dbms_xplan.display_cursor('SQL_ID_HERE', null, 'ALLSTATS LAST'));
 
 
-
-where mandt = '100'
-and vbeln in (...)
-
-
-select *
-from pserp_r.vbak
-where mandt = '100'
-and vbeln in ('0000123456','0000123457');
+create index pserp_c.ix_lookup_lpad
+on pserp_c.cnv_otcp_035_037_13_usgci_lookup ( lpad("KNA1-KUNNR",10,'0') );
