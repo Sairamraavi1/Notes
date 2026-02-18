@@ -91,3 +91,6 @@ Business/BODS validates data correctness
 4) Rollback (important clarity)
 
 Snapshot Standby changes are automatically rolled back when converted back to Physical Standby
+
+
+Previously, ADG was paused only for the export activity. In the new approach, ADG will be paused for a longer duration to accommodate staging and validation. The total pause window will increase and is directly dependent on the volume of data being staged.
