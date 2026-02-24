@@ -1,96 +1,57 @@
-Data Migration Optimization – Simple Flow
+Hi Julie,
 
-Way 1 (Preferred): Staging by DBA → BODS → Schema R (No Export/Import)
-Steps
+From the DBA side, we reviewed access directly in the Titan database using Oracle system views and filtered to active (OPEN) accounts only.
 
-Step 1
-Pause ADG and convert the standby database to Snapshot Standby (READ WRITE mode).
+Below is the list of accounts that currently have access to USGCI-related data:
 
-Step 2
-Based on BODS-provided queries, DBA creates staging tables (filtered data from multiple source tables).
+Named (Human) User Accounts – OPEN
 
-Step 3
-Validate staging tables
+MTAMELI2
 
-Row counts
+MSLITH668
 
-Sample data
+VMUDUNU4
 
-Basic sanity checks
+JHARPER26
 
-Step 4
-BODS team moves stagging tables data into Schema R (in a different database).
+FLAZARU1
 
-Step 5
-Convert Snapshot Standby back to Physical Standby and re-initiate ADG, bringing the database back to READ ONLY mode.
+GVUSABI
 
+KKHAN45
 
+RKOLUSU
 
+RKBUTT1
 
-Way 2 (Fallback): Staging by DBA → Export → Import → Schema R
-Steps
+NODONOG1
 
-Step 1
-Pause ADG and convert the standby database to Snapshot Standby (READ WRITE mode).
+SKALAP6
 
-Step 2
-Based on BODS-provided queries, DBA creates staging tables.
+MANAM2
 
-Step 3
-Validate staging tables
+Service / Application Accounts
 
-Row counts
+SVC_ELV_ORA_BODS_USER
 
-Data sanity
+SVC_ELV_ORA_R_USER
 
-Step 4
-DBA exports staging tables from the Staging database.
+SVC_ELV_ORA_CYBER_USER
 
-Step 5
-Convert Snapshot Standby back to Physical Standby and re-initiate ADG, bringing the database back to READ ONLY mode.
+Schema Owner Accounts
 
-Step 6
-DBA imports data into Schema R and creates indexes as required.
+PSERP_R
 
+PSERP_C
 
-Main Prerequisites / Key Points
-1) Query complexity drives time
+PSERP_M
 
-Step 2 is the critical path
+PSERP_D
 
-Execution time depends entirely on:
+All other database accounts are Oracle-maintained, LOCKED, or EXPIRED and do not have active access.
 
-Number of tables involved
+Jon/Josh can confirm USGCI vetting for the applicable named users and service accounts.
+We can provide additional audit evidence (account status and privilege scope) if required.
 
-Join conditions
-
-Filter logic
-
-Data volume
-
-Proactive indexing may not be feasible upfront
-
-Performance will be tuned after observing query execution
-
-2) Naming convention (must be defined before start)
-
-Clear identification of staging tables
-
-Example:
-
-R<RunID>_<Object>_<SourceTable>
-
-R20260218_SO_VBAK
-
-3) Validation responsibility
-
-DBA validates technical correctness
-
-Business/BODS validates data correctness
-
-4) Rollback (important clarity)
-
-Snapshot Standby changes are automatically rolled back when converted back to Physical Standby
-
-
-Previously, ADG was paused only for the export activity. In the new approach, ADG will be paused for a longer duration to accommodate staging and validation. The total pause window will increase and is directly dependent on the volume of data being staged.
+Thanks,
+Sai
