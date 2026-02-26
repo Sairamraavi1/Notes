@@ -1,57 +1,23 @@
-Hi Julie,
+Summary – Scratch-pad tables on Standby DB
 
-From the DBA side, we reviewed access directly in the Titan database using Oracle system views and filtered to active (OPEN) accounts only.
+I explored whether we could create local scratch-pad / staging tables on the Oracle 19c physical standby to support intermediate processing and optimization.
 
-Below is the list of accounts that currently have access to USGCI-related data:
+I tested creating:
 
-Named (Human) User Accounts – OPEN
+A local tablespace on standby
 
-MTAMELI2
+Private / temporary tables using Oracle 19c features
 
-MSLITH668
+However, the standby database is opened in read-only mode, and Oracle does not allow any DDL operations in this state. Even private or temporary tables require data-dictionary updates, which are blocked on a physical standby by design.
 
-VMUDUNU4
+Because of this:
 
-JHARPER26
+Scratch-pad or staging tables cannot be created on the standby
 
-FLAZARU1
+This is an Oracle limitation, not a configuration or access issue
 
-GVUSABI
+Way forward
 
-KKHAN45
+On standby, we can only use SELECT-based logic (CTEs, inline views, subqueries).
 
-RKOLUSU
-
-RKBUTT1
-
-NODONOG1
-
-SKALAP6
-
-MANAM2
-
-Service / Application Accounts
-
-SVC_ELV_ORA_BODS_USER
-
-SVC_ELV_ORA_R_USER
-
-SVC_ELV_ORA_CYBER_USER
-
-Schema Owner Accounts
-
-PSERP_R
-
-PSERP_C
-
-PSERP_M
-
-PSERP_D
-
-All other database accounts are Oracle-maintained, LOCKED, or EXPIRED and do not have active access.
-
-Jon/Josh can confirm USGCI vetting for the applicable named users and service accounts.
-We can provide additional audit evidence (account status and privilege scope) if required.
-
-Thanks,
-Sai
+Any table-based staging or scratch-pad processing will need to remain on the primary database or another writable environment.
