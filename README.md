@@ -1,1 +1,15 @@
-Hi Rahul, I started pulling the requested data based on the joins Hayden shared. Since some of the joins are returning a very large volume, the query is taking longer than expected. Also, the final output file may be too large to share directly over email. If you want to review the data format/content first, I can share a sample output of 100 or 1,000 records for validation, and then proceed with the full extract once confirmed. Please let me know which you prefer.
+set timing on
+spool VBAK_VBELN.txt
+
+SELECT DISTINCT a.VBELN
+FROM PSERP_R.VBAK a
+JOIN PSERP_R.VBAP b
+  ON a.VBELN = b.VBELN
+WHERE a.ZZACC_TYPE = 'G'
+  AND a.ZZACC_SUBTYPE = 'F'
+  AND b.WERKS = 'DC20'
+  AND a.ERDAT >= TO_DATE('2025-03-17','YYYY-MM-DD')
+  AND a.ERDAT <  TO_DATE('2026-03-18','YYYY-MM-DD');
+
+spool off;
+exit
