@@ -1,10 +1,1 @@
-SELECT originating_timestamp, message_text
-FROM v$diag_alert_ext
-WHERE message_text LIKE '%Managed Standby Recovery%'
-ORDER BY originating_timestamp DESC;
-
-
-SELECT originating_timestamp, message_text
-FROM v$diag_alert_ext
-WHERE message_text LIKE '%snapshot standby%'
-ORDER BY originating_timestamp DESC;
+Hi Rahul, I started pulling the requested data based on the joins Hayden shared. Since some of the joins are returning a very large volume, the query is taking longer than expected. Also, the final output file may be too large to share directly over email. If you want to review the data format/content first, I can share a sample output of 100 or 1,000 records for validation, and then proceed with the full extract once confirmed. Please let me know which you prefer.
