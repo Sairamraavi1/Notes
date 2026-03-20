@@ -1,83 +1,44 @@
 Hi Sunny,
 
-As discussed, I reviewed the logging feasibility from the database perspective and wanted to summarize the current setup, limitations, and possible options.
+Got it, thanks for the clarification — we will plan to enable standard logging during the READ-WRITE window when BODS jobs run.
 
----
+I just had a couple of quick clarifications to make sure we align correctly before setting this up:
 
-**1. Regular Audit Log Collection Process (Standard Approach)**
-In a typical setup where the database is in READ-WRITE mode:
+Scope of logging
+Should the logging be:
 
-* We can enable database auditing/logging
-* We can track user activity, table access, and privileged operations
-* Logs are generated locally and can be forwarded to downstream systems (e.g., Splunk)
+At a schema level (all activity under the schema), or
 
-This is the standard approach where DBA has full control over audit log collection.
+Limited to specific USGCI-sensitive tables (e.g., ADRC, LFA1, etc.)
 
----
+My assumption is that focusing on USGCI tables may be sufficient and will also help reduce noise, but wanted to confirm.
 
-**2. VPRS / Staging Database (Current Setup)**
+Users to capture
+Should we:
 
-* VPRS is a replicated copy of Polaris production
-* It operates in READ-ONLY mode
-* It is under continuous replication
+Capture only BOT/service accounts, or
 
-**Limitation:**
+Include any manual/DBA access as well during that window
 
-* We cannot enable or generate database-level audit logs locally in VPRS
-* No independent logging can be introduced while it remains read-only
+Level of detail expected
+Please confirm if capturing below is sufficient:
 
-Even if auditing is enabled at the Polaris production level:
+Username / service ID
 
-* Logs will capture only production activity
-* These logs may get replicated to VPRS
+Table accessed
 
-However:
+Timestamp
 
-* This will NOT capture activity happening in VPRS
-* It will NOT track BOT/BODS access during staging execution
-* It reflects only production usage, not staging usage
+Any exclusions
+Do we need to explicitly exclude any standard/system users (e.g., SAP/system IDs) to avoid unnecessary noise?
 
-So this approach does not meet the requirement of tracking VPRS activity.
+Output / Integration
 
----
+Is forwarding the generated logs to Splunk sufficient for Cyber review?
 
-**3. Read-Write Window (During BOT Execution)**
-During controlled execution windows:
+Or is there any additional format/report expected?
 
-* The database may be temporarily switched to READ-WRITE mode
-* BOT/BODS jobs run during this period
-
-In this window, we can capture:
-
-* Service/BOT user access
-* Tables accessed (e.g., ADRC, LFA1, etc.)
-* Timestamps
-
----
-
-**4. Available Option (From DB Side)**
-
-**Option: Database Auditing during READ-WRITE window**
-
-* Enable targeted auditing for required/sensitive tables
-* Capture BOT/service account activity
-* Forward logs to Splunk
-
-**Requirements:**
-
-* READ-WRITE window availability
-* List of sensitive tables
-* List of BOT/service users
-* Location to generate/store logs
-* Splunk integration
-
----
-
-Please let me know if you would like us to proceed with this approach or explore alternatives from SAP/application side as well.
+Please let me know if I’m missing anything important or if there are any specific requirements from Cyber that we should incorporate.
 
 Thanks,
 Sai
-
-
-
-
