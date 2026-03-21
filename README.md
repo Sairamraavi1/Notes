@@ -1,44 +1,17 @@
-Hi Sunny,
+Sunny, the diagram looks like a logical architecture. The names like ‘Source Schema’ and ‘SDLMG DB’ are not actual database names. From DBA side, we need to map these logical components to real environments. We are validating that by checking the actual databases where data is landing
 
-Got it, thanks for the clarification — we will plan to enable standard logging during the READ-WRITE window when BODS jobs run.
 
-I just had a couple of quick clarifications to make sure we align correctly before setting this up:
 
-Scope of logging
-Should the logging be:
+4. How to understand DATA FLOW (simple trick)
+Don’t follow diagram blindly.
+👉 Follow data movement path instead:
+	1. Where does BODS READ from? 
+	2. Where does BODS WRITE to? 
+	3. Where does GoldenGate pick data?
 
-At a schema level (all activity under the schema), or
+SDLMG appears to be a logical name in the diagram. We are identifying the actual database by tracing where the staging data is being written and accessed. We will confirm the exact DB name, host, and schema shortly
 
-Limited to specific USGCI-sensitive tables (e.g., ADRC, LFA1, etc.)
+“Instead of assuming based on the diagram, we are validating directly from the environment to ensure we provide accurate host and DB details.”
 
-My assumption is that focusing on USGCI tables may be sufficient and will also help reduce noise, but wanted to confirm.
-
-Users to capture
-Should we:
-
-Capture only BOT/service accounts, or
-
-Include any manual/DBA access as well during that window
-
-Level of detail expected
-Please confirm if capturing below is sufficient:
-
-Username / service ID
-
-Table accessed
-
-Timestamp
-
-Any exclusions
-Do we need to explicitly exclude any standard/system users (e.g., SAP/system IDs) to avoid unnecessary noise?
-
-Output / Integration
-
-Is forwarding the generated logs to Splunk sufficient for Cyber review?
-
-Or is there any additional format/report expected?
-
-Please let me know if I’m missing anything important or if there are any specific requirements from Cyber that we should incorporate.
-
-Thanks,
-Sai
+Most likely SDLMG refers to the intermediate Oracle database, and Source Schema is the schema created inside that DB where upstream data is landed
+<img width="923" height="492" alt="image" src="https://github.com/user-attachments/assets/ae170321-2cb2-4e5c-85a1-3dc976944082" />
