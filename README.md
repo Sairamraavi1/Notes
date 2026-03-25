@@ -1,33 +1,20 @@
-SELECT VBAK.VBELN,
-       VBAK.BSTNK,
-       VBAK.ERDAT,
-       VBAK.ERZET,
-       VBAK.AUART,
-       VBAK.VBTYP,
-       VBUK.GBSTK,
-       VBAK.KUNNR,
-       VBAK.KNUMV,
-       VBAK.VKORG,
-       VBAK.VTWEG,
-       VBAK.SPART,
-       VBAK.RPLNR,
-       VBAK.BSTDK,
-       VBAK.AUGRU,
-       VBAK.VSBED,
-       VBAK.NETWR,
-       VBAK.ZZBAN,
-       VBAK.ZZACC_TYPE,
-       VBAK.ZZACC_SUBTYPE,
-       VBAK.ZZCUSTOMER_H0342,
-       VBAK.ZZPARTNER_NO,
-       VBAK.ZZCORPORATE_NODE,
-       VBAK.BSARK
-FROM PSERP_R.VBUK VBUK,
-     PSERP_R.VBAK VBAK,
-     PSERP_R.ZTSD_ORDER_H ZTSD_ORDER_H
-WHERE VBUK.VBELN = VBAK.VBELN
-  AND ZTSD_ORDER_H.VBELN(+) = VBUK.VBELN
-  AND VBUK.GBSTK IN ('A', 'B')
-  AND VBAK.ERDAT >= '20251208'
-  AND VBAK.ZZACC_TYPE <> 'G'
-  AND VBAK.ZZACC_SUBTYPE <> 'F'
+SELECT username, account_status, created
+FROM dba_users
+WHERE username = 'SNF_ECC_BODS_USER';
+
+SELECT username, created
+FROM dba_users
+WHERE username = 'SNF_ECC_BODS_USER';
+
+SELECT * 
+FROM dba_role_privs 
+WHERE grantee = 'SNF_ECC_BODS_USER';
+
+
+SELECT * 
+FROM dba_sys_privs 
+WHERE grantee = 'SNF_ECC_BODS_USER';
+
+SELECT * 
+FROM dba_tab_privs 
+WHERE grantee = 'SNF_ECC_BODS_USER';
