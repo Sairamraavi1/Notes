@@ -1,10 +1,20 @@
-Hello Rahul,
+Hi Jatin,
 
-Yes, this is a service account used by the BODS team for application-level access.
+Please find the high-level responsibilities for the offshore DBA role supporting the data staging and extract processes:
 
-Regarding the password management, since the account is currently not onboarded in CyberArk, we will need to confirm the appropriate approach for secure password storage and distribution. I will check with the relevant teams on how this should be handled (CyberArk/onboarding or alternative approved method) and get back to you.
+**Role: Oracle DBA – Data Staging & Migration Support**
 
-Please let me know if you’d prefer we proceed with CyberArk onboarding before performing the password reset.
+* Manage Oracle databases (19c) supporting SAP ECC data extraction and staging environments
+* Handle **Active Data Guard (ADG)** operations including snapshot standby (read-write) and replication management
+* Perform **data export/import (Data Pump)** and schema cloning (R → S, C → D) for dry runs and cutovers
+* Support **large-volume data staging (~TB scale)** for migration workflows
+* Work closely with BODS team for **data extraction, transformations, and performance tuning**
+* Analyze and optimize **indexes, queries, and staging performance** (based on workload patterns)
+* Ensure **data security and compliance (USGCI controls)** including access restrictions and audit readiness
+* Enable and support **audit logging (OS/DB level, Splunk integration, Imperva)**
+* Coordinate with cross-functional teams (SAP, Cyber, Infra, BODS) during dry runs and cutover windows
+* Support **change management (ServiceNow CRs)** for activities like ADG pause/resume and system changes
+* Troubleshoot performance issues (redo, I/O, parallelism) and optimize large data operations
+* Provide **production support during critical windows (cutover/dry runs)**
 
-Thanks,
-Sai
+Let me know if you need a more detailed version.
