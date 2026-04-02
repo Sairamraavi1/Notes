@@ -1,19 +1,60 @@
-Hi Team,
+Physical standby is READ ONLY (with redo apply)
+In this mode, no DDL is allowed
+Creating a temp table is still DDL → so NOT allowed
+If needed, we have only 2 options:
+Create on PRIMARY → automatically replicates to standby
+Convert standby to SNAPSHOT → then create tables (READ WRITE)
 
-I wanted to share an update on the optimization efforts performed for the export/import activity between Schema R→S and Schema C→E.
+👉 Conclusion:
 
-As part of the optimization:
+“We cannot create temp tables directly on standby unless we switch it to snapshot mode or pre-create them in primary.”
 
-Archive logging was disabled during the activity window, which helped reduce redo generation and provided some improvement in throughput.
-Parallelism (parallel=16) was tested for the export process; however, we did not observe a significant improvement compared to the previous run.
+Slightly Detailed (if they ask follow-up)
+1. Standby behavior
+Physical standby runs in:
+READ ONLY WITH APPLY
+Redo is continuously applied from primary
+2. Why temp tables are not allowed
+Even Global Temporary Table (GTT) creation is:
+A DDL operation
+Standby blocks all DDL to maintain:
+Redo consistency
+Data Guard synchronization
+3. What is allowed vs not allowed
+❌ Not allowed
+CREATE TABLE
+CREATE GLOBAL TEMPORARY TABLE
+Any structural change
+✅ Allowed
+SELECT queries
+Using already existing objects
+(If GTT exists) → session-level inserts
+4. Available options
+✅ Option 1: Create in PRIMARY (Recommended if static)
+Create GTT in primary
+Automatically available in standby
+Safe, no disruption
+✅ Option 2: Snapshot standby (what we already do)
+Convert standby → READ WRITE
+Then:
+Create temp tables
+Do T1/T2/T3 staging
+After work:
+Revert back to standby
 
-From the analysis, although the server has substantial overall capacity, most of the memory resources are currently allocated to the cascade database (VPRS). As a result, the ability for parallel operations to scale further remained limited during this run.
+👉 Impact:
 
-Summary (Key Points):
+Redo apply paused
+Needs CR (which we already follow)
+5. Recommendation (align with your project)
+For BODS / staging:
+Use snapshot standby window
+For reusable structures:
+Pre-create in primary
+🔹 1-Line Executive Answer
 
-Archive log disable → Provided some performance improvement
-Parallel=16 → No noticeable improvement observed
-Observation → Parallel execution did not scale further compared to previous runs
-DR Comparison → DR environment has ~700 GB RAM; performing a similar test there is expected to provide better performance
-Action → Validate performance in DR environment / optimize for better scaling
-Next Step → Re-test in next run and compare performance metrics
+“Temp tables can’t be created on standby in read-only mode since it blocks DDL; we either create them on primary or switch to snapshot standby for read-write.”
+
+If you want, I can also give:
+👉 exact error message you’ll get (good for confidence in call)
+👉 or how to position this as optimization blocker + solution to Sunny (very useful for your discussion)
