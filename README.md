@@ -1,119 +1,69 @@
-Here’s a **crisp audit-ready high-level explanation** you can use (aligned with your screenshots and process):
+suggestions are valid as test options, but they are not guaranteed to give a drastic reduction in our case. Splitting the export/import may help somewhat if we are currently underutilizing resources, but if the real bottleneck is target-side import IO, tablespace growth, and index creation, then splitting alone will not magically solve the problem. ACCESS_METHOD=DIRECT_PATH is also worth testing, but Oracle recommends AUTOMATIC because Data Pump already chooses the most efficient unload method when possible, so forcing DIRECT_PATH does not guarantee improvement. Transportable can be much faster only when the object placement and tablespace design support it; otherwise it is not a simple drop-in replacement.”
 
----
+Does splitting export into 2 and then importing help?
 
-## **High-Level Steps – Export & Import Activity (Cascade DB → PSERP)**
+Answer: maybe a little, not necessarily a lot.
 
-### **1. Pre-Activity Preparation**
+Why:
 
-* Identified required tables (~165 tables) for export.
-* Verified available disk space and Data Pump directory paths.
-* Confirmed database status and readiness for ADG operation control.
+Splitting can help when a single job is not fully using CPU, worker processes, or available channels.
+But if your biggest bottleneck is already import-side write IO, tablespace extension waits, and index build time, then 2 import jobs can just create more contention on the target.
+So this is a testable optimization, not a guaranteed solution.
+Practical expectation
+Best case: some improvement from better concurrency and better separation of big/small tables.
+Realistic case in your situation: small to moderate gain, not a dramatic cut.
+If import is already saturated on IO, you may see little benefit or even no benefit.
 
----
+So the management-safe answer is:
 
-### **2. Pause ADG (Consistency Step)**
+“Splitting into 2 jobs can help only if we are currently not fully utilizing resources. But if the target import side is already IO-bound, then the gain will be limited.”
 
-* **Active Data Guard (ADG) replication was paused** on the cascade database.
-* Purpose:
+Does ACCESS_METHOD=DIRECT_PATH really help?
 
-  * Ensure a **consistent snapshot of data**
-  * Prevent redo apply during export
-* Database was maintained in a stable state for extraction.
+Answer: it can help in some cases, but not always.
 
----
+Oracle says ACCESS_METHOD is provided so you can try an alternative method if the default does not work as desired, and Oracle explicitly recommends AUTOMATIC whenever possible because Data Pump can automatically choose the most efficient method for each table. Also, ACCESS_METHOD is not valid for transportable tablespace jobs.
 
-### **3. Export Activity (Cascade Database)**
+What that means for you
+If you are already using normal Data Pump export, Oracle may already be choosing direct path where possible.
+Forcing ACCESS_METHOD=DIRECT_PATH may help for some tables, but it is not a guaranteed global speed-up.
+It usually affects the export/unload side, not the full end-to-end import/index problem.
+How much improvement?
 
-* Performed **Data Pump Export (expdp)** from cascade DB.
-* Export executed using parameter file (parfile).
-* Dump files generated across multiple mount points for performance:
+There is no official fixed number from Oracle like 20% or 50%.
+A safe answer is:
 
-  * Example paths:
+“It may improve export performance for eligible tables, but we should treat it as a test parameter, not as a guaranteed major improvement. Any gain is workload-dependent.”
 
-    * `/oracle/CS1/sapdata1/datapump/`
-    * `/oracle/CS1/sapdata3/datapump/`
-* Parallel dump files created:
+So do not promise management that this alone will cut many hours.
 
-  * `expdp_165tables_01.dmp` … `expdp_165tables_09.dmp`
-* This confirms **parallel export execution and load distribution**.
+What else did he say about transportable tablespaces / schema-level transport?
 
----
+He is basically describing a transportable-style movement, where instead of doing full unload/reload of table data, you move metadata plus copy the underlying datafiles. That is why he is saying it could be much faster. Oracle documents exactly that for transportable tables and tablespaces: metadata is moved by Data Pump, and the actual data is moved by copying datafiles.
 
-### **4. Resume ADG**
+But there are important limits:
 
-* After successful export:
+The involved tablespaces must be read-only.
+Transportable only works cleanly when the storage layout supports it.
+If the required 160 tables are mixed with thousands of other tables in the same tablespace, then transporting that tablespace would bring much more than just your required objects, which is exactly the concern raised in your call.
+Oracle also notes that all storage for selected objects must fit transportable rules; objects can’t straddle transportable and non-transportable placement arbitrarily in a network import.
+Will transportable finish in 1–2 hours?
 
-  * **ADG replication was resumed**
-  * Redo apply restarted to sync with primary
-* Ensured database returned to normal DR replication mode.
+Answer: not something you should commit to.
 
----
+His 1–2 hours comment is only realistic in a best-case architecture, such as:
 
-### **5. Import Activity (PSERP Database)**
+required objects neatly isolated,
+same platform/compatible setup,
+read-only transition manageable,
+datafiles copied efficiently,
+very limited extra dependencies,
+minimal remapping complications.
 
-* Import executed using **Data Pump Import (impdp)** into PSERP schema:
+In your environment, with many tables mixed in shared tablespaces and many unrelated objects, 1–2 hours is not something you should promise.
 
-  * Target schema: `PSERP_R`
-* Job initiated:
+Safer answer
 
-  * `SYS_IMPORT_TABLE_01`
-* Import processed:
+“Transportable can be significantly faster than regular export/import when the tables are cleanly isolated in transportable tablespaces. But in our current layout, where the required tables are mixed with many other objects, it is not a straightforward 1–2 hour solution.”
 
-  * Table definitions
-  * Table data (`TABLE_EXPORT/TABLE_DATA`)
-
----
-
-### **6. Import Validation (From Logs)**
-
-* Import logs confirm:
-
-  * Tables successfully created and loaded
-  * Data volume and row counts validated
-* Example:
-
-  * Small tables: 0 rows (expected structural tables)
-  * Large tables:
-
-    * `KONH` → ~8M rows
-    * `LFA1` → ~1.2M rows
-    * `ADRP` → ~9.7M rows
-    * Custom tables (Z*) also successfully loaded
-
----
-
-### **7. Post-Activity Checks**
-
-* Verified:
-
-  * Table counts and data consistency
-  * No critical errors in import logs
-* Database confirmed operational after import.
-
----
-
-## **One-Line Summary for Audit**
-
-> Data was extracted from the cascade database using Oracle Data Pump after pausing ADG to ensure consistency, followed by resuming ADG and successfully importing the data into the PSERP database with validation of row counts and objects.
-
----
-
-## **If They Ask “Why ADG Pause?” (Important Audit Point)**
-
-> ADG was paused to ensure a **transactionally consistent dataset** during export and to avoid partial data capture due to ongoing redo apply.
-
----
-
-If you want, I can also give you:
-
-* **2–3 line version for Sunny**
-* **More technical audit version (with commands like expdp/impdp)**
-* **Risk & mitigation points (audit people love this)**
-
-
-ADG replication was paused to ensure a consistent data snapshot from the cascade database.
-Required tables were exported using Oracle Data Pump (expdp) into dump files.
-After export completion, ADG was resumed to continue normal replication.
-Dump files were then imported into the PSERP database (PSERP_R schema) using impdp.
-Post-import validation confirmed successful data load with expected tables and row counts.
+Gangadhar suggested three things: test alternate Data Pump parameters, split the load into multiple jobs, and evaluate a transportable approach. All three are valid for testing. However, splitting the export/import and forcing direct path may provide only limited improvement if the real bottleneck is import-side IO and index creation. Transportable can be much faster, but only when the required tables are isolated in transportable tablespaces. In our current layout, since these tables are mixed with many other objects, that is not a quick 1–2 hour option without structural alignment.”
