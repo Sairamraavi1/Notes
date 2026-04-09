@@ -67,3 +67,22 @@ Safer answer
 “Transportable can be significantly faster than regular export/import when the tables are cleanly isolated in transportable tablespaces. But in our current layout, where the required tables are mixed with many other objects, it is not a straightforward 1–2 hour solution.”
 
 Gangadhar suggested three things: test alternate Data Pump parameters, split the load into multiple jobs, and evaluate a transportable approach. All three are valid for testing. However, splitting the export/import and forcing direct path may provide only limited improvement if the real bottleneck is import-side IO and index creation. Transportable can be much faster, but only when the required tables are isolated in transportable tablespaces. In our current layout, since these tables are mixed with many other objects, that is not a quick 1–2 hour option without structural alignment.”
+
+
+Hi Sunny,
+
+I connected with Gangadhar to review a few additional options to improve the export/import performance.
+
+We are planning to try the following:
+
+* Split the export dump across two mount points to better utilize IO and reduce contention
+* Test with `ACCESS_METHOD=DIRECT_PATH` to see if it gives any improvement
+* Also looking at increasing memory on PSERP, which may help improve performance during import and parallel operations
+
+I will run these tests and share the actual improvement numbers.
+
+For the memory part, could you please review and approve increasing the memory on the PSERP server? Once approved, I can raise the request and proceed with testing.
+
+Thanks,
+Sai
+
