@@ -88,105 +88,45 @@ Sai
 
 
 
-This change is required to refresh Schema R in the PSERP database with the latest data from the SAPERP schema in VPRS (Cascade source staging database).
+Post Backout Validation:
+- Confirm database_role = PHYSICAL STANDBY
+- Confirm open_mode = READ ONLY WITH APPLY
+- Verify log apply is active and no significant lag
+- Validate database status is stable
 
-The refresh is necessary to:
+- Communication Plan:
+- Provide updates every 15–30 minutes until recovery completion
 
-Ensure data consistency and accuracy between source (VPRS) and target (PSERP)
-Support ongoing Elevate testing and validation activities
-Provide an updated dataset required for downstream processing and verification
+- Implemantion plan
 
-Since the source database (VPRS) is operating in Active Data Guard (ADG) standby mode, a controlled pause of ADG replication is required to safely perform the export activity without impacting replication consistency.
+- Pre-Execution Validation:
+- Verify sufficient disk space for export dump files
+- Confirm ADG is fully in sync before pause
+- Validate required directory objects and permissions
+- Ensure no blocking sessions on source/target databases
 
-This is a planned and controlled database activity, executed within a defined window, ensuring minimal risk and no direct impact to end users.
+- Add this AFTER ADG Pause step
+Monitoring During Execution:
+- Monitor datapump jobs:
+  SELECT * FROM dba_datapump_jobs;
 
+- Monitor active sessions and wait events
+- Track CPU, memory, and I/O utilization
 
-Backout Plan (Improved – High Rating Version)
+- Add this BETWEEN Export and Import steps
+Checkpoint Validation:
+- Confirm export completed successfully with no errors
+- Validate dump file availability and size
 
-Objective: Restore ADG replication and revert database to original state if any failure occurs during export/import or schema refresh.
+- Add this BEFORE ADG Resume step
+Pre-Resume Validation:
+- Ensure import completed successfully
+- Validate Schema R object count and key tables
+- Check for invalid objects
 
-Backout Steps:
-
-Stop ongoing activity
-Abort export/import jobs if running
-Ensure no active sessions are impacting the database
-
-Validate current database state
-
-SELECT status, instance_name, database_role, open_mode 
-FROM v$database, v$instance;
-
-If database is in snapshot/read-write mode → revert to physical standby
-
-SHUT IMMEDIATE;
-STARTUP MOUNT;
-ALTER DATABASE CONVERT TO PHYSICAL STANDBY;
-
-Restart database in standby mode
-
-SHUT IMMEDIATE;
-STARTUP MOUNT;
-
-Enable ADG replication
-
-ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DISCONNECT FROM SESSION;
-
-Validate ADG synchronization
-
-SELECT THREAD#, SEQUENCE#, APPLIED 
-FROM v$archived_log 
-ORDER BY SEQUENCE# DESC;
-
-Confirm database is back to normal state (READ ONLY WITH APPLY)
-
-SELECT database_role, open_mode FROM v$database;
-If Schema R refresh partially completed
-Drop/revert impacted objects in Schema R (if required)
-Retain previous stable state or re-initiate refresh in next window
-
-
-
-Test Plan (Improved – High Rating Version)
-
-Objective: Validate that Schema R refresh is successful and ADG replication is functioning correctly post activity.
-
-Validation Steps:
-
-Verify database status
-
-SELECT status, instance_name, database_role, open_mode 
-FROM v$database, v$instance;
-Validate Schema R data refresh
-
-Check object count:
-
-SELECT COUNT(*) FROM dba_tables WHERE owner = 'SCHEMA_R';
-
-Validate sample table data:
-
-SELECT COUNT(*) FROM SCHEMA_R.<key_table>;
-Compare with source (VPRS)
-Validate row counts for critical tables between source and target
-
-Check invalid objects
-
-SELECT object_name, status 
-FROM dba_objects 
-WHERE owner = 'SCHEMA_R' AND status = 'INVALID';
-
-Verify ADG replication resumed
-
-SELECT PROCESS, STATUS FROM v$managed_standby;
-
-Validate log apply
-
-SELECT MAX(SEQUENCE#), APPLIED 
-FROM v$archived_log 
-GROUP BY APPLIED;
-Basic performance sanity check
-Run sample queries on Schema R
-Ensure no latency or locking issues
-Final confirmation
-Database in expected mode
-Data refreshed successfully
-ADG in sync
+- Add this at END of Implementation Plan
+Post-Execution Validation:
+- Resume ADG and confirm log apply
+- Verify database in READ ONLY WITH APPLY mode
+- Validate no replication lag
+- Capture logs (expdp/impdp/alert logs) for audit reference
