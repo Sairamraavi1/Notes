@@ -130,3 +130,28 @@ Post-Execution Validation:
 - Verify database in READ ONLY WITH APPLY mode
 - Validate no replication lag
 - Capture logs (expdp/impdp/alert logs) for audit reference
+
+
+Add this at the VERY TOP (before Objective)
+Backout Trigger Conditions:
+- Export or Import job failure
+- Schema R refresh incomplete or failed
+- ADG replication not resuming or high lag observed
+- Data validation mismatch between source (VPRS) and target (PSERP)
+👉 2. Add this AFTER Objective (before Backout Steps)
+Backout Ownership:
+- Primary: DBA Team
+- Support: Infrastructure Team (if required)
+
+Expected Recovery Time (RTO):
+- ADG restoration and database normalization within 30–60 minutes
+👉 3. Add this at the END (after your last SQL step)
+Post Backout Validation:
+- Confirm database_role = PHYSICAL STANDBY
+- Confirm open_mode = READ ONLY WITH APPLY
+- Verify log apply is active and no significant lag
+- Validate database status is stable
+
+Communication Plan:
+- Notify stakeholders immediately upon backout initiation
+- Provide updates every 15–30 minutes until recovery completion
