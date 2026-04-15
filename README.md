@@ -125,3 +125,30 @@ Please let me know if we can proceed with the above infrastructure changes so I 
 Thanks,
 Sai
 
+
+Performance Optimization – Summary
+1. Suggestions from Production DBA
+Use multiple mount points for dump file generation
+Use ACCESS_METHOD=DIRECT_PATH for export
+Increase parallelism for export and import jobs
+Evaluate DB Link approach instead of dump-based movement
+Ensure sufficient system resources (memory/CPU)
+2. Actions Implemented / Tested
+Tested export and import with different parallelism levels (Parallel 8 and 16)
+Executed export using multiple mount points
+Disabled archive logging during import (TRANSFORM=DISABLE_ARCHIVE_LOGGING:Y)
+Split import into two phases:
+Table data load
+Index creation (separate job)
+Executed index creation independently for better control
+Identified and executed large tables separately to avoid end-of-job delays
+Performed schema copy across multiple schemas (PSERP_R → PSERP_S / PSERP_M) to validate behavior
+Compared performance across environments (VPRS vs PSERP)
+Attempted parallel execution in batches for better resource utilization
+Planned testing for Direct Path export (pending)
+DB Link approach identified but not yet executed
+3. Final Understanding
+Export process is stable and not a bottleneck
+Import and index creation consume most of the time
+Increasing parallelism and IO changes did not significantly improve performance
+Current limitation is primarily due to system resources (memory/CPU)
