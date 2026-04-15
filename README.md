@@ -79,3 +79,49 @@ Method	Description	Execution Approach	Parameters Used	Timing	Result	Key Observat
 M3	Internal schema copy (alternate run)	Export from PSERP_R → dump files → Import into PSERP_M → Index creation post import	PARALLEL=8	Export: 5 hrs
 Import: 20 hrs
 Index: 24 hrs	Completed successfully	Slower than Method 2, shows resource constraint
+
+
+Hi Sunny,
+
+As discussed, I have completed multiple rounds of testing to evaluate the performance of the export/import process and to identify optimization opportunities.
+
+**Summary of what has been tested:**
+
+* Export with parallel 8 and 16
+* Export across multiple mount points
+* Import split into table data and index creation
+* Use of disable archive logging to reduce redo
+* Handling large tables separately
+* Parallel execution for better throughput
+
+**Key observations:**
+
+* Increasing parallelism did not result in significant improvement, indicating possible resource constraints.
+* Export to multiple mount points did not show noticeable gains, suggesting IO is not the primary bottleneck.
+* Import phase remains the major bottleneck (~18 hours), especially due to large tables being processed at the end.
+* Splitting table and index jobs provided better control and reduced failure impact.
+
+**Enhancements identified:**
+
+* Increasing memory is expected to improve performance significantly (based on observed differences between environments).
+* Pre-creating datafiles/tablespaces will help avoid runtime delays.
+* Running large tables separately helps reduce long tail delays.
+* Direct path export is being tested further.
+* DB link approach will be tested, though expected impact is minimal.
+
+**Challenges / Risks:**
+
+* Concurrent BODS activity during import may further impact performance.
+* Limited storage is restricting multiple test iterations.
+
+**Next steps / Requirements:**
+
+* Additional storage: ~10TB for export and ~15TB for import testing
+* Memory increase for PSERP (to align closer with DR capacity)
+* Raising an Oracle SR to validate if further optimizations are possible
+
+Please let me know if we can proceed with the above infrastructure changes so I can perform a complete end-to-end performance validation and provide more accurate timelines.
+
+Thanks,
+Sai
+
