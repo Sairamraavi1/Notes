@@ -62,3 +62,20 @@ Storage (Export)	10 TB	Multiple testing cycles
 Storage (Import)	15 TB	Parallel import + index
 Memory Increase	Align with DR (~700GB)	Improve performance
 Oracle SR	Raise with Oracle	Expert validation
+
+
+Method 1 – VPRS → PSERP_R (Full Refresh)
+Method	Description	Execution Approach	Parameters Used	Timing	Result	Key Observation
+M1	Full refresh from Cascade DB to PSERP	Export from VPRS (SAPERP) → dump files → Import into PSERP_R → Index creation post import	Disable archive logging during import	Export: 3 hrs
+Import: 16 hrs
+Index: 23 hrs	Completed successfully	Import & index creation are major bottlenecks
+🔹 Method 2 – PSERP_R → PSERP_S (Schema Copy – High Parallel Export)
+Method	Description	Execution Approach	Parameters Used	Timing	Result	Key Observation
+M2	Internal schema copy within PSERP	Export from PSERP_R using high parallel → dump files → Import into PSERP_S using parallel → Full import (data + indexes together)	Export: PARALLEL=16
+Import: PARALLEL=8	Export: 4h 39m
+Import: 18 hrs	Completed successfully	Higher parallel did not improve performance significantly
+🔹 Method 3 – PSERP_R → PSERP_M (Schema Copy – Standard Parallel)
+Method	Description	Execution Approach	Parameters Used	Timing	Result	Key Observation
+M3	Internal schema copy (alternate run)	Export from PSERP_R → dump files → Import into PSERP_M → Index creation post import	PARALLEL=8	Export: 5 hrs
+Import: 20 hrs
+Index: 24 hrs	Completed successfully	Slower than Method 2, shows resource constraint
