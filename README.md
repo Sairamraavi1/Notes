@@ -102,3 +102,25 @@ Estimated rollback time: 30-60 minutes
 
 Estimated rollback time: 30–60 minutes.
 Responsible teams: Infrastructure (memory rollback), DBA (validation).
+
+
+1) If any issue is observed post-change (server instability, DB connectivity issues, or performance degradation), DBA team will immediately notify Infrastructure team.
+
+2) Infrastructure team will assess the issue and confirm rollback decision.
+
+3) Revert memory configuration on host pttnasvpr00052 to previous allocation using HMC/infra tools.
+
+4) Restart the server if required to apply rollback configuration.
+
+5) Post restart, Infrastructure team will verify OS-level memory and system stability.
+
+6) DBA team will validate PSERP and VPRS database availability and connectivity.
+
+7) DBA team will confirm application/database services are functioning normally.
+
+8) Capture rollback evidence (memory, system status, DB connectivity).
+
+9) Notify all stakeholders on rollback completion and system status.
+
+Estimated rollback time: 30–60 minutes.
+Responsible teams: Infrastructure (memory rollback), DBA (validation).
