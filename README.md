@@ -1,154 +1,81 @@
-Method	Description	Parameters Used	Timing	Observations	Improvement Scope
-Method 1	Standard Export (VPRS)	PARALLEL=8	~4 hrs 39 mins	Stable execution, no major gain	Limited improvement
-Method 2	Export with Higher Parallelism	PARALLEL=16	Tested during Schema R → S copy	No significant improvement	Resource bottleneck (CPU/IO)
-Method 3	Export to 2 Mount Points	Multiple dump locations	Same as above	No major performance difference	IO not main bottleneck
-Method 4	Direct Path Export	ACCESS_METHOD=DIRECT_PATH	In progress/testing	Expected faster throughput	Needs validation
-Method 5	Import - Table Data Only	EXCLUDE=INDEX, STATISTICS	~18 hours (data only)	Better control on failures	Recommended approach
-Method 6	Separate Index Creation	Post import job	+5 hours approx	Reduces risk & improves control	Optimal approach
-Method 7	Parallel Import (Split Jobs)	PARALLEL=8	Improved slightly	Better than single job	Can be optimized further
-Method 8	Big Tables Separate Jobs	Selected large tables separately	Reduced bottleneck	Avoids long tail delay	Good improvement
-Method 9	Disable Archive Logging	TRANSFORM=DISABLE_ARCHIVE_LOGGING:Y	Reduced redo overhead	Some performance gain	Recommended
-Method 10	DB Link Approach	Not tested	-	Expected minimal gain	Needs validation
+Short Description (same field as screenshot)
 
-=======================================================================================================================================================
+👉 Paste this:
 
-Final Excel Structure (Recommended Format)
-🔷 Sheet 1: Executive Summary (Top View for Sunny)
-Area	Current State	Observation	Impact	Recommendation
-Export Performance	~4 hrs 39 mins	Stable, no major bottleneck	Low concern	No major changes required
-Import Performance	~18+ hours	Major bottleneck	High impact	Needs optimization
-Parallelism	8 vs 16 tested	No significant improvement	Resource limitation	Increase memory
-IO (Mount Points)	1 vs 2 mount points	No improvement	Not bottleneck	No action needed
-Large Tables	Processed at end	Causing delay	High impact	Separate execution
-Index Creation	Done separately	Better control	Medium	Recommended approach
-Archive Logging	Disabled	Reduced redo overhead	Medium	Keep using
-BODS Parallel Run	Not tested	Expected contention	High risk	Needs coordination
+Increase memory on host 0052 to support PSERP/VPRS export, import, indexing, and cutover testing activities
+🔹 Step 4: Description field
 
-Detailed Testing Methods
-Method ID	Method Description	Parameters Used	Execution Approach	Timing	Result	Conclusion
-M1	Export (VPRS)	PARALLEL=8	Standard export	4h 39m	Stable	Baseline
-M2	Export High Parallel	PARALLEL=16	Schema R → S copy	Similar timing	No gain	Resource bound
-M3	Multi Mount Export	2 mount points	Split dump files	No change	No gain	IO not issue
-M4	Direct Path Export	ACCESS_METHOD=DIRECT_PATH	Testing	TBD	Expected gain	Validate
-M5	Import (Data Only)	EXCLUDE=INDEX, STATISTICS	Single job	~18 hrs	Controlled	Good approach
-M6	Index Separate Job	Post import	Parallel index build	+5 hrs	Flexible	Recommended
-M7	Parallel Import	PARALLEL=8	Multiple jobs	Slight gain	Limited	Improve further
-M8	Large Tables Split	Separate jobs	Big tables isolated	Improved	Reduced delay	Best approach
-M9	Disable Archive Logging	TRANSFORM=DISABLE_ARCHIVE_LOGGING:Y	Applied	Faster	Reduced redo	Keep using
-M10	DB Link	Not tested	Planned	-	TBD	Needs validation
+👉 Paste this:
 
-Bottleneck Analysis
-Bottleneck Area	Description	Severity	Evidence	Action Required
-Memory	Limited RAM impacting parallelism	High	No improvement with parallel 16	Increase memory
-Large Tables	Processed last causing delay	High	Long tail in import	Split execution
-IO Throughput	Disk performance	Low	No change with 2 mounts	No action
-Parallel Jobs	Resource contention	Medium	Limited gain	Tune based on memory
-Concurrent BODS	Shared resources	High	Not tested but expected	Plan execution window
+Request to increase memory on host 0052 to improve performance for project-related database activities on PSERP and VPRS.
 
-Improvement Plan
-Priority	Improvement	Expected Benefit	Effort	Dependency
-High	Increase Memory (RAM)	20–30% improvement	Medium	Infra approval
-High	Pre-create Datafiles	Faster import	Low	DBA
-High	Split Large Tables	Reduce delay	Low	DBA
-Medium	Direct Path Validation	Faster export	Low	Testing
-Medium	DB Link Testing	Avoid exp/imp	Medium	Access
-Medium	Parallel Optimization	Better utilization	Medium	Memory
-Low	Transportable Tablespaces	Major redesign	High	Feasibility
+Host 0052 is currently used for export/import, schema refresh, indexing, and validation activities. These operations are memory intensive and currently facing resource pressure.
 
+The requested change is to increase memory on 0052 to support ongoing dry runs, performance testing, and cutover preparation.
 
-Infrastructure Requirements
-Requirement	Details	Purpose
-Storage (Export)	10 TB	Multiple testing cycles
-Storage (Import)	15 TB	Parallel import + index
-Memory Increase	Align with DR (~700GB)	Improve performance
-Oracle SR	Raise with Oracle	Expert validation
+This is an infrastructure-level change only. No application changes involved.
 
+If required, server restart will be performed during approved change window.
+✅ Now move to Planning Tab (VERY IMPORTANT)
+🔹 Step 5: Justification (as per your screenshot)
 
-Method 1 – VPRS → PSERP_R (Full Refresh)
-Method	Description	Execution Approach	Parameters Used	Timing	Result	Key Observation
-M1	Full refresh from Cascade DB to PSERP	Export from VPRS (SAPERP) → dump files → Import into PSERP_R → Index creation post import	Disable archive logging during import	Export: 3 hrs
-Import: 16 hrs
-Index: 23 hrs	Completed successfully	Import & index creation are major bottlenecks
-🔹 Method 2 – PSERP_R → PSERP_S (Schema Copy – High Parallel Export)
-Method	Description	Execution Approach	Parameters Used	Timing	Result	Key Observation
-M2	Internal schema copy within PSERP	Export from PSERP_R using high parallel → dump files → Import into PSERP_S using parallel → Full import (data + indexes together)	Export: PARALLEL=16
-Import: PARALLEL=8	Export: 4h 39m
-Import: 18 hrs	Completed successfully	Higher parallel did not improve performance significantly
-🔹 Method 3 – PSERP_R → PSERP_M (Schema Copy – Standard Parallel)
-Method	Description	Execution Approach	Parameters Used	Timing	Result	Key Observation
-M3	Internal schema copy (alternate run)	Export from PSERP_R → dump files → Import into PSERP_M → Index creation post import	PARALLEL=8	Export: 5 hrs
-Import: 20 hrs
-Index: 24 hrs	Completed successfully	Slower than Method 2, shows resource constraint
+👉 Paste this:
 
+Host 0052 is supporting critical database activities for PSERP and VPRS including export/import, indexing, schema refresh, and cutover rehearsal.
 
-Hi Sunny,
+Current memory is insufficient for high-volume operations, causing performance bottlenecks and longer execution times.
 
-As discussed, I have completed multiple rounds of testing to evaluate the performance of the export/import process and to identify optimization opportunities.
+Increasing memory will improve performance, reduce resource contention, and support project timelines for testing and cutover.
 
-**Summary of what has been tested:**
+This change is required to ensure stable and efficient execution of project activities.
+🔹 Step 6: Implementation Plan
 
-* Export with parallel 8 and 16
-* Export across multiple mount points
-* Import split into table data and index creation
-* Use of disable archive logging to reduce redo
-* Handling large tables separately
-* Parallel execution for better throughput
+👉 Paste this (structured like your screenshot):
 
-**Key observations:**
+1) Validate current memory allocation on host 0052
+2) Confirm target memory size with infrastructure team
+3) Notify stakeholders about change window
+4) Ensure no active DB activities running on host
+5) Login to server management console (HMC/Infra tool)
+6) Increase memory allocation for host 0052
+7) Restart server if required
+8) Bring server back online
+9) Verify OS-level memory update
+10) Validate PSERP and VPRS connectivity
+11) Confirm database availability
+12) Capture evidence of memory increase
+🔹 Step 7: Risk and Impact Analysis
 
-* Increasing parallelism did not result in significant improvement, indicating possible resource constraints.
-* Export to multiple mount points did not show noticeable gains, suggesting IO is not the primary bottleneck.
-* Import phase remains the major bottleneck (~18 hours), especially due to large tables being processed at the end.
-* Splitting table and index jobs provided better control and reduced failure impact.
+👉 Paste this:
 
-**Enhancements identified:**
+Risk: Medium
 
-* Increasing memory is expected to improve performance significantly (based on observed differences between environments).
-* Pre-creating datafiles/tablespaces will help avoid runtime delays.
-* Running large tables separately helps reduce long tail delays.
-* Direct path export is being tested further.
-* DB link approach will be tested, though expected impact is minimal.
+This activity may require server restart, leading to temporary unavailability of services on host 0052.
 
-**Challenges / Risks:**
+Impact if not implemented:
+Database operations such as export/import and indexing will continue to face performance issues, increasing risk to project timelines and cutover readiness.
 
-* Concurrent BODS activity during import may further impact performance.
-* Limited storage is restricting multiple test iterations.
+Risk is mitigated by performing activity in planned window and validating services post change.
+🔹 Step 8: Backout Plan
 
-**Next steps / Requirements:**
+👉 Paste this:
 
-* Additional storage: ~10TB for export and ~15TB for import testing
-* Memory increase for PSERP (to align closer with DR capacity)
-* Raising an Oracle SR to validate if further optimizations are possible
+1) If any issue occurs, inform infrastructure team immediately
+2) Revert memory configuration to previous state
+3) Restart server if required
+4) Verify system stability
+5) Validate PSERP and VPRS connectivity
+6) Confirm database availability
+7) Notify stakeholders of rollback
 
-Please let me know if we can proceed with the above infrastructure changes so I can perform a complete end-to-end performance validation and provide more accurate timelines.
+Estimated rollback time: 30-60 minutes
+🔹 Step 9: Test Plan
 
-Thanks,
-Sai
+👉 Paste this:
 
-
-Performance Optimization – Summary
-1. Suggestions from Production DBA
-Use multiple mount points for dump file generation
-Use ACCESS_METHOD=DIRECT_PATH for export
-Increase parallelism for export and import jobs
-Evaluate DB Link approach instead of dump-based movement
-Ensure sufficient system resources (memory/CPU)
-2. Actions Implemented / Tested
-Tested export and import with different parallelism levels (Parallel 8 and 16)
-Executed export using multiple mount points
-Disabled archive logging during import (TRANSFORM=DISABLE_ARCHIVE_LOGGING:Y)
-Split import into two phases:
-Table data load
-Index creation (separate job)
-Executed index creation independently for better control
-Identified and executed large tables separately to avoid end-of-job delays
-Performed schema copy across multiple schemas (PSERP_R → PSERP_S / PSERP_M) to validate behavior
-Compared performance across environments (VPRS vs PSERP)
-Attempted parallel execution in batches for better resource utilization
-Planned testing for Direct Path export (pending)
-DB Link approach identified but not yet executed
-3. Final Understanding
-Export process is stable and not a bottleneck
-Import and index creation consume most of the time
-Increasing parallelism and IO changes did not significantly improve performance
-Current limitation is primarily due to system resources (memory/CPU)
+1) Verify host 0052 is accessible
+2) Check updated memory at OS level
+3) Validate all services are running
+4) Confirm PSERP and VPRS database connectivity
+5) Perform basic DB validation
+6) Capture evidence of successful change
