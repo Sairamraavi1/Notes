@@ -1,126 +1,71 @@
-Short Description (same field as screenshot)
-
-👉 Paste this:
-
-Increase memory on host 0052 to support PSERP/VPRS export, import, indexing, and cutover testing activities
-🔹 Step 4: Description field
-
-👉 Paste this:
-
-Request to increase memory on host 0052 to improve performance for project-related database activities on PSERP and VPRS.
-
-Host 0052 is currently used for export/import, schema refresh, indexing, and validation activities. These operations are memory intensive and currently facing resource pressure.
-
-The requested change is to increase memory on 0052 to support ongoing dry runs, performance testing, and cutover preparation.
-
-This is an infrastructure-level change only. No application changes involved.
-
-If required, server restart will be performed during approved change window.
-✅ Now move to Planning Tab (VERY IMPORTANT)
-🔹 Step 5: Justification (as per your screenshot)
-
-👉 Paste this:
-
-Host 0052 is supporting critical database activities for PSERP and VPRS including export/import, indexing, schema refresh, and cutover rehearsal.
-
-Current memory is insufficient for high-volume operations, causing performance bottlenecks and longer execution times.
-
-Increasing memory will improve performance, reduce resource contention, and support project timelines for testing and cutover.
-
-This change is required to ensure stable and efficient execution of project activities.
-🔹 Step 6: Implementation Plan
-
-👉 Paste this (structured like your screenshot):
-
-1) Validate current memory allocation on host 0052
-2) Confirm target memory size with infrastructure team
-3) Notify stakeholders about change window
-4) Ensure no active DB activities running on host
-5) Login to server management console (HMC/Infra tool)
-6) Increase memory allocation for host 0052
-7) Restart server if required
-8) Bring server back online
-9) Verify OS-level memory update
-10) Validate PSERP and VPRS connectivity
-11) Confirm database availability
-12) Capture evidence of memory increase
-🔹 Step 7: Risk and Impact Analysis
-
-👉 Paste this:
-
-Risk: Medium
-
-This activity may require server restart, leading to temporary unavailability of services on host 0052.
-
-Impact if not implemented:
-Database operations such as export/import and indexing will continue to face performance issues, increasing risk to project timelines and cutover readiness.
-
-Risk is mitigated by performing activity in planned window and validating services post change.
-🔹 Step 8: Backout Plan
-
-👉 Paste this:
-
-1) If any issue occurs, inform infrastructure team immediately
-2) Revert memory configuration to previous state
-3) Restart server if required
-4) Verify system stability
-5) Validate PSERP and VPRS connectivity
-6) Confirm database availability
-7) Notify stakeholders of rollback
-
-Estimated rollback time: 30-60 minutes
-🔹 Step 9: Test Plan
-
-👉 Paste this:
-
-1) Verify host 0052 is accessible
-2) Check updated memory at OS level
-3) Validate all services are running
-4) Confirm PSERP and VPRS database connectivity
-5) Perform basic DB validation
-6) Capture evidence of successful change
+ps -eo user,pcpu | awk '
+NR>1 {cpu[$1]+=$2}
+END {
+  for (u in cpu)
+    printf "%-15s %.2f%%\n", u, cpu[u]
+}' | sort -k2 -nr
 
 
-
-1) If any issue is observed post-change (server instability, DB connectivity issues, or performance degradation), DBA team will immediately notify Infrastructure team.
-
-2) Infrastructure team will assess the issue and confirm rollback decision.
-
-3) Revert memory configuration on host pttnasvpr00052 to previous allocation using HMC/infra tools.
-
-4) Restart the server if required to apply rollback configuration.
-
-5) Post restart, Infrastructure team will verify OS-level memory and system stability.
-
-6) DBA team will validate PSERP and VPRS database availability and connectivity.
-
-7) DBA team will confirm application/database services are functioning normally.
-
-8) Capture rollback evidence (memory, system status, DB connectivity).
-
-9) Notify all stakeholders on rollback completion and system status.
-
-Estimated rollback time: 30–60 minutes.
-Responsible teams: Infrastructure (memory rollback), DBA (validation).
+ps -eo user,pid,pcpu,args --sort=-pcpu | head -20
 
 
-1) If any issue is observed post-change (server instability, DB connectivity issues, or performance degradation), DBA team will immediately notify Infrastructure team.
+ps -eo user,pcpu,args | grep oracle | grep -v grep | \
+awk '{sum+=$2} END {print "Oracle CPU:", sum "%"}'
 
-2) Infrastructure team will assess the issue and confirm rollback decision.
+uick Answer (what to run now)
 
-3) Revert memory configuration on host pttnasvpr00052 to previous allocation using HMC/infra tools.
+Run this to get CPU usage by user (live evidence):
 
-4) Restart the server if required to apply rollback configuration.
+ps -eo user,pcpu | awk '
+NR>1 {cpu[$1]+=$2}
+END {
+  for (u in cpu)
+    printf "%-15s %.2f%%\n", u, cpu[u]
+}' | sort -k2 -nr
 
-5) Post restart, Infrastructure team will verify OS-level memory and system stability.
+👉 This gives user-wise CPU consumption (your main proof)
 
-6) DBA team will validate PSERP and VPRS database availability and connectivity.
+🔥 Step 1 — Identify top consumers (process level)
+ps -eo user,pid,pcpu,args --sort=-pcpu | head -20
 
-7) DBA team will confirm application/database services are functioning normally.
+👉 Look for:
 
-8) Capture rollback evidence (memory, system status, DB connectivity).
+oracle → expdp / DB activity
+bods / dsuser / service account → BODS
+Others → OS / unknown load
+🔥 Step 2 — Separate Oracle vs BODS clearly
 
-9) Notify all stakeholders on rollback completion and system status.
+This is the key for your situation 👇
 
-Estimated rollback time: 30–60 minutes.
-Responsible teams: Infrastructure (memory rollback), DBA (validation).
+👉 Oracle CPU (expdp / DB workload)
+ps -eo user,pcpu,args | grep oracle | grep -v grep | \
+awk '{sum+=$2} END {print "Oracle CPU:", sum "%"}'
+👉 BODS CPU (replace user if needed)
+ps -eo user,pcpu,args | grep -i bods | grep -v grep | \
+awk '{sum+=$2} END {print "BODS CPU:", sum "%"}'
+
+👉 If BODS runs with a service account, use that username instead:
+
+ps -eo user,pcpu | grep <bods_user>
+🔥 Step 3 — Real-time monitoring (best proof during call)
+
+Run:
+
+topas
+
+Press:
+
+P   (process view)
+
+👉 You will see:
+
+CPU per process
+USER column
+
+✔ Take screenshot → strong evidence for Sunny / management
+
+🔥 Step 4 — Correlate with system CPU
+
+Run:
+
+vmstat 1 5
