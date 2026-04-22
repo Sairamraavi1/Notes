@@ -69,3 +69,22 @@ USER column
 Run:
 
 vmstat 1 5
+
+
+
+
+ps aux | awk '
+{cpu[$1]+=$3}
+END {
+  for (u in cpu)
+    printf "%-15s %.2f%%\n", u, cpu[u]
+}' | sort -k2 -nr
+
+
+ps aux | sort -k3 -nr | head -20
+
+ps aux | grep oracle | grep -v grep | awk '{sum+=$3} END {print "Oracle CPU:", sum "%"}'
+
+ps aux | grep -i bods | grep -v grep | awk '{sum+=$3} END {print "BODS CPU:", sum "%"}'
+
+ps aux | awk '$1=="dsuser" {sum+=$3} END {print "BODS CPU:", sum "%"}'
