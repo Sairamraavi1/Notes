@@ -1,90 +1,28 @@
-ps -eo user,pcpu | awk '
-NR>1 {cpu[$1]+=$2}
-END {
-  for (u in cpu)
-    printf "%-15s %.2f%%\n", u, cpu[u]
-}' | sort -k2 -nr
+Requesting creation of a read-only service account for DB link access as part of Elevate business validation.
+
+We require a dedicated service account to enable controlled access from PSERP to the VPRS (Cascade) source database via DB link.
+
+Details:
+Database Server Name: ECC PRD
+Database Name: pttnasvpr00052 (VPRS)
+Target Schema: SAPERP (Source system)
+
+Proposed Service Account Name: SVC_PRD_ELEVATE_DBLINK_RO
+
+Access Required:
+- Read-only access to required SAP tables in SAPERP schema
+- No DML permissions (INSERT/UPDATE/DELETE)
+- Access will be used strictly via DB link from PSERP
+
+Purpose:
+This service account will be used by the Elevate business validation team to query SAP ECC data through DB link for reconciliation, reporting, and validation activities.
+
+Notes:
+- This account will be used as the underlying credential for DB links (not for direct user access)
+- No direct login access is required for business users
+- Access should comply with read-only and security standards
+
+Kindly create the service account and grant appropriate read-only privileges.
 
 
-ps -eo user,pid,pcpu,args --sort=-pcpu | head -20
-
-
-ps -eo user,pcpu,args | grep oracle | grep -v grep | \
-awk '{sum+=$2} END {print "Oracle CPU:", sum "%"}'
-
-uick Answer (what to run now)
-
-Run this to get CPU usage by user (live evidence):
-
-ps -eo user,pcpu | awk '
-NR>1 {cpu[$1]+=$2}
-END {
-  for (u in cpu)
-    printf "%-15s %.2f%%\n", u, cpu[u]
-}' | sort -k2 -nr
-
-👉 This gives user-wise CPU consumption (your main proof)
-
-🔥 Step 1 — Identify top consumers (process level)
-ps -eo user,pid,pcpu,args --sort=-pcpu | head -20
-
-👉 Look for:
-
-oracle → expdp / DB activity
-bods / dsuser / service account → BODS
-Others → OS / unknown load
-🔥 Step 2 — Separate Oracle vs BODS clearly
-
-This is the key for your situation 👇
-
-👉 Oracle CPU (expdp / DB workload)
-ps -eo user,pcpu,args | grep oracle | grep -v grep | \
-awk '{sum+=$2} END {print "Oracle CPU:", sum "%"}'
-👉 BODS CPU (replace user if needed)
-ps -eo user,pcpu,args | grep -i bods | grep -v grep | \
-awk '{sum+=$2} END {print "BODS CPU:", sum "%"}'
-
-👉 If BODS runs with a service account, use that username instead:
-
-ps -eo user,pcpu | grep <bods_user>
-🔥 Step 3 — Real-time monitoring (best proof during call)
-
-Run:
-
-topas
-
-Press:
-
-P   (process view)
-
-👉 You will see:
-
-CPU per process
-USER column
-
-✔ Take screenshot → strong evidence for Sunny / management
-
-🔥 Step 4 — Correlate with system CPU
-
-Run:
-
-vmstat 1 5
-
-
-
-
-ps aux | awk '
-{cpu[$1]+=$3}
-END {
-  for (u in cpu)
-    printf "%-15s %.2f%%\n", u, cpu[u]
-}' | sort -k2 -nr
-
-
-ps aux | sort -k3 -nr | head -20
-
-ps aux | grep oracle | grep -v grep | awk '{sum+=$3} END {print "Oracle CPU:", sum "%"}'
-
-ps aux | grep -i bods | grep -v grep | awk '{sum+=$3} END {print "BODS CPU:", sum "%"}'
-
-ps aux | awk '$1=="dsuser" {sum+=$3} END {print "BODS CPU:", sum "%"}'
+SVC_PRD_ELEVATE_DBLINK_RO
