@@ -1,28 +1,23 @@
-Requesting creation of a read-only service account for DB link access as part of Elevate business validation.
+Issue:
+We are facing timeouts and connection drops while querying large tables via DB Link (PSERP → VPRS).
 
-We require a dedicated service account to enable controlled access from PSERP to the VPRS (Cascade) source database via DB link.
+Small queries are working fine
+Large queries on big tables are failing or timing out
 
-Details:
-Database Server Name: ECC PRD
-Database Name: pttnasvpr00052 (VPRS)
-Target Schema: SAPERP (Source system)
+Error Observed:
+Intermittent timeout / session disconnect during DB Link execution when accessing high-volume data.
 
-Proposed Service Account Name: SVC_PRD_ELEVATE_DBLINK_RO
+Context:
 
-Access Required:
-- Read-only access to required SAP tables in SAPERP schema
-- No DML permissions (INSERT/UPDATE/DELETE)
-- Access will be used strictly via DB link from PSERP
+Oracle 19c databases
+Queries involve large SAP tables and joins
+Minimal load during testing, still seeing the issue
 
-Purpose:
-This service account will be used by the Elevate business validation team to query SAP ECC data through DB link for reconciliation, reporting, and validation activities.
+Requirement:
+We need to support high-volume validation queries within a limited 6–8 hour window, so stable performance is critical.
 
-Notes:
-- This account will be used as the underlying credential for DB links (not for direct user access)
-- No direct login access is required for business users
-- Access should comply with read-only and security standards
+Ask:
 
-Kindly create the service account and grant appropriate read-only privileges.
-
-
-SVC_PRD_ELEVATE_DBLINK_RO
+Is DB Link recommended for large data queries in this scenario?
+What tuning/configuration can help avoid timeouts?
+Any better alternative approach suggested by Oracle?
