@@ -1,26 +1,47 @@
-Hi Uday,
+Create a simple architecture diagram for Reverse Push DB Link Testing in MLAB.
 
-As discussed with Josh and Sunny, we would like to request your approval to use Dev04/VE1 (or another suitable NPE environment if preferred) to perform a proof-of-concept test for the proposed validation approach.
+Title:
+MLAB Reverse Push DB Link Test Methodology
 
-The objective of this testing is to evaluate a push-based validation method where required data from the SAPERP schema is copied into dedicated validation schemas for Mark and Kevin, allowing them to perform validation activities within the NPE environment.
+Diagram Layout:
 
-Proposed high-level testing steps:
+[MLAB Database 1]
+Schema: SAPERP_SOURCE
 
-Use the SAPERP schema in Dev04/VE1 as the source schema.
-Create dedicated validation schemas for Mark and Kevin within the approved NPE environment.
-Obtain the required access approvals for Mark and Kevin to perform validation activities in their respective schemas.
-Identify the required tables and validation queries.
-Configure the source and target schemas for testing.
-Copy/push the required data from the SAPERP schema into the validation schemas.
-Create any required indexes or supporting objects needed for validation.
-Execute validation queries and capture performance metrics.
-Document end-to-end timings, observations, and any dependencies or constraints.
+* Source data tables
+* Same tables currently used for validation testing
+* Source user account
 
-The goal is to validate the feasibility of this approach and understand the overall execution effort and duration before considering its use for production-related validation activities.
+  ```
+      |
+      | DB Link
+      V
+  ```
 
-Please let us know if Dev04/VE1 is an appropriate environment for this testing or if another NPE environment (such as P-Lab or Q-Lab) would be preferred.
+[MLAB Database 2]
+Schema: MARK_VALIDATION
 
-Thank you for your review and approval.
+* Target schema
+* Receives data from source schema
+* Used by Mark and Kevin for validation testing
 
-Regards,
-Sai
+Flow:
+
+1. Source data resides in SAPERP_SOURCE schema.
+2. DB Link is created from MARK_VALIDATION schema to SAPERP_SOURCE schema.
+3. Validation queries are executed using the DB Link.
+4. Test reverse push methodology by inserting/selecting data through the DB Link.
+5. Capture execution timings and performance metrics.
+6. Compare results against the current pull methodology.
+
+Add an Action Items section:
+
+* Identify two MLAB databases.
+* Create source schema (or use existing SAPERP schema).
+* Create target validation schema.
+* Configure DB Link.
+* Execute validation scripts.
+* Capture timings.
+* Document findings before June 2 cutover.
+
+Use simple boxes, arrows, and labels suitable for an Excel worksheet presentation.
