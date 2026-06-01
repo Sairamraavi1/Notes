@@ -1,47 +1,16 @@
-Create a simple architecture diagram for Reverse Push DB Link Testing in MLAB.
+1. Pause Active Data Guard (ADG) replication on Titan source standby staging database.
+2. Convert standby database to read-write mode.
+3. Support Mark's validation testing activities.
+4. Monitor database status and validate successful testing completion.
+5. Restore database to standby mode after testing.
+6. Resume ADG replication and verify synchronization status.
+7. Capture required evidence and screenshots for audit/compliance purposes.
 
-Title:
-MLAB Reverse Push DB Link Test Methodology
-
-Diagram Layout:
-
-[MLAB Database 1]
-Schema: SAPERP_SOURCE
-
-* Source data tables
-* Same tables currently used for validation testing
-* Source user account
-
-  ```
-      |
-      | DB Link
-      V
-  ```
-
-[MLAB Database 2]
-Schema: MARK_VALIDATION
-
-* Target schema
-* Receives data from source schema
-* Used by Mark and Kevin for validation testing
-
-Flow:
-
-1. Source data resides in SAPERP_SOURCE schema.
-2. DB Link is created from MARK_VALIDATION schema to SAPERP_SOURCE schema.
-3. Validation queries are executed using the DB Link.
-4. Test reverse push methodology by inserting/selecting data through the DB Link.
-5. Capture execution timings and performance metrics.
-6. Compare results against the current pull methodology.
-
-Add an Action Items section:
-
-* Identify two MLAB databases.
-* Create source schema (or use existing SAPERP schema).
-* Create target validation schema.
-* Configure DB Link.
-* Execute validation scripts.
-* Capture timings.
-* Document findings before June 2 cutover.
-
-Use simple boxes, arrows, and labels suitable for an Excel worksheet presentation.
+Perform DBA activities for CHG022655403:
+- Pause ADG replication.
+- Convert Titan standby staging database to read-write mode.
+- Support validation testing by Mark and project team.
+- Monitor database health during testing window.
+- Revert database back to standby mode after testing.
+- Resume ADG replication.
+- Validate replication status and document results.
