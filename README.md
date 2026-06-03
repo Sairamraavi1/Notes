@@ -1,143 +1,26 @@
-# VPRS to PSERP DB Link Testing Summary
-
-## Objective
-
-Validate the DB link approach for business validation activities between VPRS and PSERP and determine whether the proposed methodology can support Mark's validation testing requirements.
-
-## Activities Performed
-
-### User Creation
-
-Created dedicated testing users for the validation activity:
-
-* Mark Tambling NTID user
-* PSERP_CE user
-
-These users were created to support validation testing and object ownership requirements.
-
-The users were provided:
-
-* Required object privileges
-* Tablespace allocation
-* Quota assignment
-* Ability to create validation objects as required
-
-### DB Link Configuration
-
-Configured and tested DB links between:
-
-* PSERP → VPRS
-* VPRS → PSERP
-
-### Oracle Configuration Review
-
-Reviewed and validated:
-
-* tnsnames.ora
-* sqlnet.ora
-* DB link definitions
-* Oracle version compatibility
-
-Verified all environments are running Oracle 19.23.
-
-## Test Results
-
-### PSERP → VPRS
-
-Result: Successful
-
-Observations:
-
-* DB link connectivity successful
-* Queries executed successfully
-* No communication channel errors observed
-
-### VPRS → PSERP
-
-Result: Failed
-
-Observed Error:
-
-* ORA-03113: End-of-file on communication channel
-
-Observations:
-
-* DB link connectivity established successfully
-* User authentication successful
-* Error occurs during query execution
-
-## Analysis
-
-Since:
-
-* Connectivity exists
-* Authentication succeeds
-* PSERP → VPRS works successfully
-* Oracle versions are aligned
-* TNS and SQLNET configurations were reviewed
-
-The issue does not currently appear to be a basic Oracle connectivity issue.
-
-## Current Hypothesis
-
-VPRS operates with additional security controls, including:
-
-* CyberArk
-* Imperva
-
-Historically, similar behavior was observed with the SNF_ECC_BODS_USER account where database access required additional security onboarding and whitelisting before functioning correctly in VPRS.
-
-The current hypothesis is that the newly created testing users may require:
-
-1. CyberArk onboarding/enablement
-2. Imperva whitelisting/approval
-
-before they can be fully utilized for this testing scenario.
-
-## Why a New User Was Created
-
-A dedicated user was intentionally created rather than immediately reusing the SNF_ECC_BODS_USER account because:
-
-* Separation of duties
-* Cleaner audit trail
-* Ability to allocate tablespace and quotas
-* Ability to create and maintain validation objects
-* Avoid impact to the existing BODS service account
-
-This follows standard Oracle security and administration practices.
-
-## Next Steps
-
-1. Validate whether the new users require CyberArk onboarding.
-2. Validate whether Imperva whitelisting is required.
-3. Retest using the existing SNF_ECC_BODS_USER account as a comparison.
-4. If the SNF account succeeds, confirm the issue is related to user onboarding/security controls rather than Oracle DB link configuration.
-5. Complete onboarding for the new users and retest.
-
-
 Hi Team,
 
-Yesterday we completed DB link testing between VPRS and PSERP using the newly created validation users.
+As discussed during today's call, we reviewed the current VPRS to PSERP DB link testing results and identified a potential security-related dependency that requires further validation.
 
-Summary of results:
+Summary of findings:
 
-* PSERP to VPRS DB link testing completed successfully.
-* VPRS to PSERP connectivity was established successfully; however, query execution failed with ORA-03113 (End-of-file on communication channel).
-* We reviewed the DB link configuration, tnsnames.ora, sqlnet.ora settings, and Oracle version compatibility. All environments are currently running Oracle 19.23.
+* PSERP to VPRS DB link testing is working successfully.
+* VPRS to PSERP DB link connectivity is established; however, query execution fails with ORA-03113 (End-of-file on communication channel).
+* Oracle versions, TNS configuration, and SQLNET configuration have been reviewed and do not currently indicate a connectivity issue.
 
-Based on the testing results, the issue does not appear to be a basic Oracle connectivity or DB link configuration problem, as the connection is successfully established and the reverse direction (PSERP to VPRS) works as expected.
+Current working hypothesis:
 
-Our current assessment is that the newly created validation users may require additional onboarding through CyberArk and/or Imperva before they can be fully utilized within the VPRS environment. We have previously observed similar behavior with the SNF_ECC_BODS_USER account, which required additional security enablement.
+Based on previous experience with newly created users in VPRS, we believe the issue may be related to additional security controls such as CyberArk onboarding and/or Imperva whitelisting requirements.
 
-As a next step, we plan to:
+Next Steps:
 
-* Validate CyberArk onboarding requirements for the newly created users.
-* Validate Imperva whitelisting requirements.
-* Perform comparative testing using the existing SNF_ECC_BODS_USER account.
-* Retest after any required security onboarding activities are completed.
+1. Obtain the required CR approval for a testing window.
+2. Retest the VPRS to PSERP DB link using the existing SNF_ECC_BODS_USER account, which is already known and enabled within the environment.
+3. Compare the results against the newly created validation user.
+4. If the SNF_ECC_BODS_USER test succeeds, proceed with applying the same security onboarding and approval process to Mark's user account.
+5. If the issue persists with the SNF_ECC_BODS_USER account, continue investigating alternative Oracle/DB link related causes.
 
-We will provide additional updates as testing progresses.
+This testing will help determine whether the issue is related to security onboarding or the DB link implementation itself.
 
 Thanks,
 Sai
-
