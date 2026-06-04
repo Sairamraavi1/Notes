@@ -1,26 +1,42 @@
-Hi Team,
+We are testing DB Link validation between VPRS and PSERP.
 
-As discussed during today's call, we reviewed the current VPRS to PSERP DB link testing results and identified a potential security-related dependency that requires further validation.
+Environment:
 
-Summary of findings:
+* VPRS and PSERP are Oracle 19.23.
+* PSERP → VPRS DB Link works.
+* VT3 → MT3 lower environment DB Link works.
+* VPRS → PSERP has connectivity and authentication working, but query execution fails with:
+  ORA-03113: end-of-file on communication channel.
+* sqlnet.ora, tnsnames.ora, DB Link definition, Oracle version, and basic TNS connectivity were reviewed.
+* Small/simple connectivity appears to work, but execution through the DB Link fails.
+* VPRS has additional security layers such as CyberArk/Imperva.
+* Newly created validation users were created in VPRS during read-write mode.
+* Similar behavior was previously seen with newly created BODS users until security enablement/whitelisting was handled.
 
-* PSERP to VPRS DB link testing is working successfully.
-* VPRS to PSERP DB link connectivity is established; however, query execution fails with ORA-03113 (End-of-file on communication channel).
-* Oracle versions, TNS configuration, and SQLNET configuration have been reviewed and do not currently indicate a connectivity issue.
+Current suspicion:
+The issue may be due to one of these:
 
-Current working hypothesis:
+1. Newly created user not fully onboarded through CyberArk/Imperva.
+2. Imperva/security layer terminating the VPRS → PSERP DB Link session.
+3. SQL*Net timeout/session termination during query execution.
+4. Distributed query execution plan issue over DB Link.
+5. Remote PSERP server process crash or trace-level Oracle error.
+6. User/profile/resource limit causing session termination.
+7. Parallel query or large data movement across DB Link.
 
-Based on previous experience with newly created users in VPRS, we believe the issue may be related to additional security controls such as CyberArk onboarding and/or Imperva whitelisting requirements.
+Please help identify what additional checks are needed to isolate the root cause and fix the issue.
 
-Next Steps:
+Specific checks we need guidance on:
 
-1. Obtain the required CR approval for a testing window.
-2. Retest the VPRS to PSERP DB link using the existing SNF_ECC_BODS_USER account, which is already known and enabled within the environment.
-3. Compare the results against the newly created validation user.
-4. If the SNF_ECC_BODS_USER test succeeds, proceed with applying the same security onboarding and approval process to Mark's user account.
-5. If the issue persists with the SNF_ECC_BODS_USER account, continue investigating alternative Oracle/DB link related causes.
+1. What should we check in PSERP alert log and trace files at the exact ORA-03113 timestamp?
+2. What should we check in VPRS alert log and trace files?
+3. How do we confirm whether Imperva/CyberArk blocked, reset, or terminated the session?
+4. Should we test with the existing whitelisted SNF_ECC_BODS_USER to compare against the newly created validation user?
+5. What SQLNET parameters should be aligned across VPRS and PSERP for Oracle 19.23?
+6. Should we disable parallel query and retest?
+7. How do we confirm whether the DB Link is failing only for large queries versus basic connectivity?
+8. What database user/profile/resource limits should be checked?
+9. What execution plan checks should be done for the failing query?
+10. What is the safest workaround if DB Link remains unstable: local runtime schema in VPRS, filtered CTAS, export/import runtime schema into PSERP?
 
-This testing will help determine whether the issue is related to security onboarding or the DB link implementation itself.
-
-Thanks,
-Sai
+Please provide a step-by-step troubleshooting and fix plan.
