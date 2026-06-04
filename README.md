@@ -1,42 +1,147 @@
-We are testing DB Link validation between VPRS and PSERP.
+We are troubleshooting an Oracle DB Link issue between VPRS and PSERP databases and need a deep technical investigation from a pure Oracle/DB Link perspective.
 
-Environment:
+Environment Details:
 
-* VPRS and PSERP are Oracle 19.23.
-* PSERP → VPRS DB Link works.
-* VT3 → MT3 lower environment DB Link works.
-* VPRS → PSERP has connectivity and authentication working, but query execution fails with:
-  ORA-03113: end-of-file on communication channel.
-* sqlnet.ora, tnsnames.ora, DB Link definition, Oracle version, and basic TNS connectivity were reviewed.
-* Small/simple connectivity appears to work, but execution through the DB Link fails.
-* VPRS has additional security layers such as CyberArk/Imperva.
-* Newly created validation users were created in VPRS during read-write mode.
-* Similar behavior was previously seen with newly created BODS users until security enablement/whitelisting was handled.
+* Oracle Database Version:
 
-Current suspicion:
-The issue may be due to one of these:
+  * VPRS: 19.23.0.0.0
+  * PSERP: 19.23.0.0.0
+  * VT3: 19.23.0.0.0
+  * MT3: 19.23.0.0.0
 
-1. Newly created user not fully onboarded through CyberArk/Imperva.
-2. Imperva/security layer terminating the VPRS → PSERP DB Link session.
-3. SQL*Net timeout/session termination during query execution.
-4. Distributed query execution plan issue over DB Link.
-5. Remote PSERP server process crash or trace-level Oracle error.
-6. User/profile/resource limit causing session termination.
-7. Parallel query or large data movement across DB Link.
+* VPRS and PSERP are on the same physical host.
 
-Please help identify what additional checks are needed to isolate the root cause and fix the issue.
+* VT3 to MT3 DB Link testing works successfully.
 
-Specific checks we need guidance on:
+* PSERP to VPRS DB Link testing works successfully.
 
-1. What should we check in PSERP alert log and trace files at the exact ORA-03113 timestamp?
-2. What should we check in VPRS alert log and trace files?
-3. How do we confirm whether Imperva/CyberArk blocked, reset, or terminated the session?
-4. Should we test with the existing whitelisted SNF_ECC_BODS_USER to compare against the newly created validation user?
-5. What SQLNET parameters should be aligned across VPRS and PSERP for Oracle 19.23?
-6. Should we disable parallel query and retest?
-7. How do we confirm whether the DB Link is failing only for large queries versus basic connectivity?
-8. What database user/profile/resource limits should be checked?
-9. What execution plan checks should be done for the failing query?
-10. What is the safest workaround if DB Link remains unstable: local runtime schema in VPRS, filtered CTAS, export/import runtime schema into PSERP?
+* Only VPRS to PSERP DB Link execution is failing.
 
-Please provide a step-by-step troubleshooting and fix plan.
+Observed Error:
+
+* ORA-03113: end-of-file on communication channel
+
+Observed Behavior:
+
+* DB Link connectivity works.
+* TNS resolution works.
+* Authentication/login succeeds.
+* Query starts execution.
+* During execution, session disconnects with:
+  ORA-03113: end-of-file on communication channel
+
+What Has Already Been Checked:
+
+1. DB Link creation syntax
+2. tnsnames.ora configuration
+3. sqlnet.ora configuration
+4. Oracle version compatibility
+5. Listener connectivity
+6. Basic DB Link connectivity
+7. Reverse DB Link direction
+8. Lower environment DB Link testing
+9. SQLNET.ALLOWED_LOGON_VERSION values
+10. DEFAULT_SDU_SIZE settings
+11. SQLNET.EXPIRE_TIME settings
+
+Current sqlnet.ora settings include:
+
+* SQLNET.EXPIRE_TIME=10
+* DEFAULT_SDU_SIZE=32768
+* SQLNET.ALLOWED_LOGON_VERSION_SERVER=10/12
+* SQLNET.ALLOWED_LOGON_VERSION_CLIENT=10/12
+
+Issue Specifics:
+
+* PSERP → VPRS works
+* VT3 → MT3 works
+* VPRS → PSERP fails
+* Connectivity exists but execution disconnects
+* Failure happens during query execution, not during login
+* Failure occurs through DB Link queries
+* Queries involve large SAP ECC source tables and filtered subset validation queries
+* Some queries execute for some time before failing
+* Query performance through DB Link is also significantly slower than expected
+
+We need a technical investigation strictly from an Oracle DB Link / SQLNET / distributed query execution perspective.
+
+Please help analyze:
+
+1. What are the most likely Oracle-side causes of:
+   ORA-03113: end-of-file on communication channel
+   specifically during distributed DB Link query execution?
+
+2. Since connectivity and authentication succeed, what components should be investigated next?
+
+   * SQLNET session handling?
+   * Distributed transaction layer?
+   * Parallel query over DB Link?
+   * Remote session termination?
+   * Oracle bug?
+   * SQL execution plan?
+   * Distributed optimizer behavior?
+
+3. What exact checks should be performed on:
+
+   * VPRS alert logs
+   * PSERP alert logs
+   * Listener logs
+   * Trace files
+   * ADRCI diagnostics
+
+4. What queries should be executed to investigate:
+
+   * Distributed query execution
+   * DB Link session behavior
+   * Remote session failures
+   * Wait events
+   * Parallel slaves
+   * SQL execution plan issues
+   * Resource limits
+   * Session kills
+   * Network/session timeouts
+
+5. What Oracle parameters should be verified/aligned between VPRS and PSERP?
+   Especially related to:
+
+   * SQLNET
+   * Distributed transactions
+   * Parallel execution
+   * Open links
+   * Session/process limits
+   * SDU/TDU
+   * Dead connection detection
+
+6. Could large distributed joins or CTAS over DB Link trigger ORA-03113 even when the DB Link itself is healthy?
+
+7. What is the best way to isolate whether:
+
+   * the issue is query-specific,
+   * DB Link execution-specific,
+   * SQLNET/session-specific,
+   * optimizer-related,
+   * or Oracle process crash-related?
+
+8. Should we test with:
+
+   * parallel disabled,
+   * small table queries,
+   * CTAS locally,
+   * DRIVING_SITE hints,
+   * remote filtering,
+   * materialized subset tables,
+   * or no distributed joins?
+
+9. What Oracle bugs or known 19c distributed query issues should be checked for ORA-03113 during DB Link execution?
+
+10. What would be the recommended step-by-step troubleshooting sequence to isolate and fix this issue?
+
+Please provide:
+
+* detailed root-cause possibilities,
+* exact investigation commands,
+* Oracle views to check,
+* trace locations,
+* recommended SQLNET settings,
+* optimizer/distributed query checks,
+* and practical validation tests.
