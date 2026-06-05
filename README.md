@@ -1,12 +1,25 @@
-Hi Krystal,
+Subject: DB Link Testing Update – Successful Validation and Next Steps
 
-Apologies — I missed your email earlier as I was engaged in testing activities for another CR scheduled at 10 PM PST.
+Hello @Godavari, Sunny, @Abrego, Joshua,
 
-Although we had discussed the change activity earlier on Teams, I was not aware that my attendance on the bridge was specifically required. A quick Teams message or phone call would have helped clarify that, especially since the change was time-sensitive. If I had known, I could have joined within a few minutes.
+Providing an update on last night’s DB link testing activities.
 
-Please let me know if any additional support is still needed from my side.
+The testing was completed successfully using the existing user account SNF_ECC_BODS_USER. Mark was able to complete the validation testing successfully, and no performance or connectivity issues were observed during the execution. Based on the results and timings, the approach should work within the required testing window from a performance perspective.
 
-Thanks for your understanding.
+This confirms that the earlier issue has been resolved and also helps narrow down the root cause to the user/account setup and required whitelisting process. The testing validated that the DB link works successfully when the user is properly configured and whitelisted.
 
-Best regards,
+For last night’s testing, we temporarily used the existing BODS account (SNF_ECC_BODS_USER) for validation purposes. However, moving forward, it would be better to have separate dedicated users for Mark’s validation activities, since the required grants and access for BODS processing and validation testing are different.
+
+Next steps required:
+
+* Create two dedicated users for the validation activities
+* Obtain the required approvals for user creation
+* Complete CyberArk approval process
+* Complete Imperva whitelisting for the new users
+
+Once the above activities are completed, Mark should be able to independently perform the validation testing going forward without dependency on the BODS user account.
+
+Mark will share the detailed testing results and timing information separately.
+
+Thanks,
 Sai
