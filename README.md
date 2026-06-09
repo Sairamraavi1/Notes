@@ -1,136 +1,149 @@
 SHORT DESCRIPTION
 
-Elevate: VPRS DB Link Validation and Query Optimization Testing using Service Account in Titan Environment
+Elevate: ADG Pause, Schema R Refresh, and DB Link Validation Testing in VPRS/PSERP Environment
 
 DESCRIPTION
 
-As part of Elevate validation activities, the team will conduct controlled DB link validation and query optimization testing in the Titan/VPRS staging environment using the existing whitelisted service account.
+As part of Elevate activities, the team will perform a planned pause of Active Data Guard (ADG) replication in VPRS (Cascade DB) to refresh Schema R in PSERP using the latest SAPERP schema data from VPRS.
 
-The activity includes:
+During the same controlled outage/testing window, the team will also conduct DB link validation and query optimization testing using the existing whitelisted service account to support automated validation activities for Sales Order and related validation objects.
 
-* Validation of DB link connectivity between VPRS (Cascade DB) and PSERP.
-* Query optimization and tuning for automated validation pipelines.
-* Validation of lookup table access from PSERP through DB link.
-* Generation and validation of working tables within VPRS for downstream automated functional validation testing.
+Activities included:
 
-No production data modifications will occur. Testing will be performed in Titan/VPRS staging environment only.
+* Pause ADG replication.
+* Convert VPRS to snapshot standby mode.
+* Export SAPERP schema data from VPRS.
+* Refresh Schema R in PSERP.
+* Resume ADG replication and validate synchronization.
+* Execute DB link validation testing.
+* Perform query optimization/tuning activities.
+* Validate automated validation pipeline execution and working table generation.
 
 JUSTIFICATION
 
-This activity is required to validate and optimize the automated functional validation process planned for upcoming Elevate testing and cutover activities.
+This activity is required to refresh Schema R in PSERP with the latest source data from VPRS and to support ongoing Elevate validation and automation testing activities.
 
-The testing is necessary to:
+The refresh is necessary to:
 
-* Validate DB link connectivity and query execution behavior in actual VPRS/Cascade environment.
-* Fine-tune long-running validation queries prior to production-aligned execution windows.
-* Validate automated validation pipeline functionality for Sales Order and related validation objects.
-* Reduce execution risks during planned cutover validation activities.
-* Confirm that the existing whitelisted service account can support optimization/testing activities prior to final onboarding of the newly provisioned service account.
+* Ensure data consistency between VPRS and PSERP environments.
+* Provide updated source data required for downstream validation and defect remediation testing.
+* Support optimization and validation of automated DB link validation processes before production-aligned execution windows.
+* Validate query execution behavior and working table generation in the actual VPRS/Cascade environment.
+* Reduce execution and performance risks during upcoming cutover and validation activities.
 
-This is a planned and controlled testing activity executed within the Titan staging environment with no direct impact to production users or live production processing.
+Since VPRS operates in Active Data Guard (ADG) standby mode, a controlled pause of ADG replication is required to safely perform snapshot conversion and export activities.
+
+This is a planned and controlled database activity executed within the Titan/VPRS staging environment with no direct production impact.
 
 IMPLEMENTATION PLAN
 
 Pre-Implementation Validation
 
-1. Confirm VPRS database status:
+1. Validate archive/apply synchronization between Primary, Titan, and VPRS.
+
+2. Validate current database role/open mode:
    SELECT database_role, open_mode FROM v$database;
 
-2. Validate ADG status and lag:
+3. Validate managed standby/apply status:
    SELECT process, status FROM v$managed_standby;
 
-3. Validate DB link connectivity:
-   SELECT * FROM dual@<DBLINK_NAME>;
+4. Validate existing DB link connectivity using approved service account.
 
-4. Confirm existing whitelisted service account connectivity.
+Cutover Activities
 
-Implementation Activities
-
-1. Team will connect to VPRS/Cascade environment using approved accounts.
-2. Execute DB link validation queries between VPRS and PSERP.
-3. Pull required lookup/configuration tables through DB link.
-4. Execute query optimization and tuning activities for automated validation queries.
-5. Create and validate temporary/working tables required for validation pipeline processing.
-6. Monitor database resource utilization during testing activity.
-7. Capture execution timings and validate query performance improvements.
-8. Coordinate with BODS and validation teams during testing window.
-
-Monitoring Activities
-
-* Monitor database sessions.
-* Monitor TEMP usage.
-* Monitor CPU and I/O utilization.
-* Monitor long running SQL execution.
-* Validate no impact to existing export/import activities.
+1. Pause managed standby recovery on VPRS.
+2. Shutdown and mount database.
+3. Convert VPRS to snapshot standby mode.
+4. Open database in read/write mode.
+5. Execute export of SAPERP schema objects required for Schema R refresh.
+6. Refresh Schema R objects in PSERP environment.
+7. Gather required statistics and validate object counts.
+8. Execute DB link validation and query optimization testing using existing whitelisted service account.
+9. Execute automated validation pipeline queries and validate working table generation.
+10. Monitor TEMP, CPU, sessions, and query execution during testing.
+11. Shutdown database and convert VPRS back to physical standby mode.
+12. Resume managed standby recovery.
+13. Validate ADG synchronization and recovery status.
 
 ROLLBACK / BACKOUT PLAN
 
-If any instability, performance issue, or unexpected behavior is identified:
+If any issue occurs during refresh or testing activities:
 
-1. Stop active validation/query testing sessions.
+1. Stop active export/import and DB link testing sessions.
 
-2. Drop temporary working tables created during testing if required.
+2. Drop/revert temporary working tables if required.
 
-3. Disable or disconnect active DB link sessions if needed.
+3. Shutdown VPRS instance.
 
-4. Validate database stability:
+4. Mount database.
+
+5. Convert database back to physical standby mode.
+
+6. Open database in READ ONLY WITH APPLY mode.
+
+7. Resume managed standby recovery:
+   ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DISCONNECT FROM SESSION;
+
+8. Validate:
    SELECT database_role, open_mode FROM v$database;
 
-5. Validate ADG status remains healthy:
+9. Validate standby apply health:
    SELECT process, status FROM v$managed_standby;
 
-6. Confirm no blocking or long-running residual sessions remain active.
+10. Confirm no significant lag or instability exists.
 
-7. Return environment to standard operational state.
-
-No permanent application or production data changes are involved in this activity.
+If Schema R refresh only partially completes, impacted objects can be reverted or refreshed again during next approved window.
 
 RISK AND IMPACT ANALYSIS
 
-Risk Level: Low to Medium
+Risk Level: Medium
 
 Potential Risks:
 
-* Increased database resource utilization during query optimization testing.
-* Temporary performance impact within Titan/VPRS staging environment.
-* Long-running queries may consume TEMP or CPU resources.
+* Temporary ADG replication pause during snapshot conversion.
+* Increased CPU/TEMP utilization during export/import and query optimization activities.
+* Long-running DB link validation queries may increase resource consumption.
+* Extended outage window if refresh or testing exceeds estimated duration.
 
 Mitigation:
 
-* Activity will be monitored throughout execution.
-* Testing limited to staging/Titan environment only.
-* Existing whitelisted service account already previously validated.
-* DBA team will monitor resource utilization continuously.
-* Queries can be terminated immediately if abnormal resource consumption is observed.
+* Activity limited to Titan/VPRS staging environment only.
+* Continuous DBA monitoring throughout implementation.
+* Existing validated service account will be used for DB link testing.
+* Queries and sessions can be terminated immediately if abnormal utilization occurs.
+* Full rollback procedure available to restore ADG standby configuration.
 
-No direct production impact is expected.
+No direct production user impact is expected.
 
 TEST PLAN
 
 Objective:
-Validate DB link functionality, query execution stability, and automated validation pipeline optimization in VPRS/Titan environment.
+Validate successful Schema R refresh, ADG recovery resumption, DB link functionality, and automated validation query execution.
 
 Validation Steps:
 
-1. Validate successful DB link connectivity.
-2. Validate lookup table access through DB link.
-3. Validate query execution completion without ORA-03113 or connectivity failures.
-4. Validate working table creation and downstream query execution.
-5. Compare query execution timings before and after optimization.
-6. Validate no abnormal TEMP, CPU, or session growth.
-7. Validate ADG/database status remains healthy throughout testing.
+1. Validate database role/open mode after recovery.
+2. Validate Schema R object counts and sample data.
+3. Validate invalid object count.
+4. Validate ADG managed recovery status.
+5. Validate DB link connectivity and query execution.
+6. Validate working table generation through validation pipeline.
+7. Validate query execution timings and stability.
+8. Validate no ORA-03113 or DB link disconnect errors.
+9. Validate standby synchronization health post activity.
 
 Success Criteria:
 
-* DB link queries complete successfully.
-* No ORA-03113 or DB link disconnect errors observed.
-* Working tables created successfully.
-* Query execution timings improved or validated.
+* Schema R refresh completed successfully.
+* ADG resumed successfully with healthy apply status.
+* DB link queries completed successfully.
+* Working tables generated successfully.
 * No database instability observed.
-* ADG/database status remains healthy post testing.
+* Validation queries completed within expected thresholds.
 
 COMMUNICATION PLAN
 
-* Provide updates every 30 minutes during testing window.
-* Notify stakeholders upon activity completion.
-* Escalate immediately if abnormal database behavior is identified.
+* Provide implementation updates every 15–30 minutes during activity window.
+* Notify stakeholders upon Schema R refresh completion.
+* Notify stakeholders after DB link validation/testing completion.
+* Escalate immediately if abnormal database or ADG behavior is identified.
