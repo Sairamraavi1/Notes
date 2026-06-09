@@ -147,3 +147,45 @@ COMMUNICATION PLAN
 * Notify stakeholders upon Schema R refresh completion.
 * Notify stakeholders after DB link validation/testing completion.
 * Escalate immediately if abnormal database or ADG behavior is identified.
+
+
+
+ROLLBACK / BACKOUT PLAN
+
+If any issue occurs during Schema R refresh, ADG recovery, or DB link testing activities, the following rollback steps will be performed immediately to restore the environment to stable standby mode.
+
+1. Stop active export/import and DB link testing sessions.
+
+2. Terminate long-running sessions if excessive resource utilization is observed.
+
+3. Shutdown VPRS database:
+   SHUTDOWN IMMEDIATE;
+
+4. Mount database:
+   STARTUP MOUNT;
+
+5. Convert snapshot standby back to physical standby:
+   ALTER DATABASE CONVERT TO PHYSICAL STANDBY;
+
+6. Restart database and resume ADG apply:
+   ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DISCONNECT FROM SESSION;
+
+7. Validate database status:
+   SELECT database_role, open_mode FROM v$database;
+
+Expected Result:
+
+* DATABASE_ROLE = PHYSICAL STANDBY
+* OPEN_MODE = READ ONLY WITH APPLY
+
+8. Validate managed recovery/apply status:
+   SELECT process, status FROM v$managed_standby;
+
+9. Drop/revert incomplete temporary working tables if required.
+
+10. Validate Schema R object availability and confirm database stability.
+
+If Schema R refresh partially completes, impacted objects can be reverted or refreshed again during the next approved maintenance window.
+
+Estimated rollback completion time: 30–45 minutes.
+
