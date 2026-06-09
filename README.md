@@ -1,41 +1,132 @@
-Hello Team,
+Create a professional enterprise architecture infographic/technical workflow diagram for “DB Link Access Provisioning Approach – VPRS Validation”.
 
-We request your review and approval for the proposed DB link approach to support functional validation activities for the Mach3/Elevate testing efforts.
+The diagram should visually explain:
 
-Overview:
+* When the approach works
+* When it does not work
+* Snapshot mode dependency
+* Temporary vs persistent users/objects
+* Best provisioning strategy for validation users
 
-* Source data resides in the VPRS environment (Cascade standby database)
-* Validation and reporting activities are performed in the PSERP environment
-* A DB link will be used to securely transfer only the required validation result sets between environments
-* Users will access the approved DB link through dedicated controlled schemas, and credentials will be managed through CyberArk
+Style:
 
-Validation Process:
+* Clean enterprise architecture style
+* Professional Oracle/SAP/DBA presentation look
+* Use arrows, lifecycle flow, icons, and status indicators
+* White background with blue/green/orange/red sections
+* Clear separation between “Read Only” and “Read Write Snapshot” modes
+* Use database cylinder icons, lock icons, user icons, rollback icons, sync arrows
 
-1. Validation queries are executed in VPRS against required source tables.
-2. Required validation/result tables are generated for comparison and reporting.
-3. Only required validation data is transferred from VPRS to dedicated validation schemas in PSERP through the approved DB link.
-4. Functional users perform validation and reconciliation activities in PSERP.
-5. No production transactional updates occur through the DB link; usage is limited to validation and reporting activities only.
+Title:
+“DB LINK ACCESS PROVISIONING APPROACH – VPRS VALIDATION”
 
-Security & Controls:
+Subtitle:
+“When It Works, When It Does Not, and Recommended Approach”
 
-* Dedicated user accounts will be created specifically for validation activities.
-* Separate accounts will be maintained for BODS processing and validation activities to ensure segregation of duties.
-* User creation requires Production DBA approval.
-* Passwords will be managed through CyberArk.
-* Imperva whitelisting will be completed before access is granted.
-* Access will be restricted to only the required schemas and tables.
-* Access will be limited strictly to validation activities.
+Main workflow should contain 4 phases:
 
-Testing Results:
+1. NORMAL STATE (READ ONLY)
 
-* Initial testing using the approved whitelisted account completed successfully.
-* Mark completed testing without performance or connectivity issues.
-* Timings were within the required validation window.
+* VPRS in Physical Standby Mode
+* Database is Read Only
+* DB Link creation NOT allowed
+* Cannot create users/schemas
+* Cannot create objects/tables
+* Validation activities will not work
+* Show red X indicators
 
-We request confirmation from the SOX team that this DB link approach is acceptable from a controls and compliance perspective.
+2. SNAPSHOT MODE (READ WRITE)
 
-Please let us know if any additional details or documentation are required.
+* VPRS converted to Snapshot Database
+* Database becomes Read Write
+* DB Link creation works
+* Can create temporary users/schemas
+* Can create validation tables/objects
+* Validation activities work
+* DBA can create additional temporary users if required
+* Use green check marks
 
-Thanks,
-Sai
+3. CONVERT BACK TO READ ONLY
+
+* Snapshot converted back to Physical Standby
+* Resynchronization with primary database
+* All temporary changes rolled back
+* DB Links removed
+* Temporary users removed
+* Temporary schemas/objects removed
+
+4. AFTER RESYNC
+
+* Database back to original Read Only state
+* No temporary users exist
+* No DB Links exist
+* System returns to original standby state
+
+Include a “KEY ROLES” side panel:
+
+* Mark & Kevin → Need access for validation activities
+* Service Account (Whitelisted) → Used for DB Link connectivity
+* Mark NTID / Schema User → Used for schema validation activities
+* DBA → Creates DB Links and temporary users during snapshot window
+
+Include an “ACCESS PROVISIONING STRATEGY” table:
+Columns:
+
+* Purpose
+* Recommended User
+* Whitelisting Required?
+* When Used
+* Persists After Read Only?
+
+Rows:
+
+1. DB Link Connectivity
+
+   * Use Whitelisted Service Account
+   * Yes whitelist required
+   * Only during Snapshot Mode
+   * Does NOT persist after resync
+
+2. Schema Validation Activities
+
+   * Use Mark NTID or temporary schema
+   * Optional whitelist depending on requirement
+   * During Snapshot Mode
+   * Does NOT persist after resync
+
+3. Additional Temporary Users
+
+   * Created by DBA during snapshot window
+   * No permanent whitelist required
+   * Temporary only
+   * Automatically removed after rollback/resync
+
+Add a highlighted “BEST PRACTICE APPROACH” section:
+
+* Use whitelisted service account for DB Link connectivity
+* Use Mark NTID or temporary schemas only during snapshot mode
+* Create any extra validation users during approved change window
+* After converting back to read-only standby, all temporary users, DB links, and objects are automatically rolled back
+
+Add a “WHAT WORKS / DOES NOT WORK” comparison box:
+
+WORKS ONLY IN SNAPSHOT MODE:
+✔ Create DB Links
+✔ Create Users/Schemas
+✔ Create Validation Objects
+✔ Run Validation Activities
+
+DOES NOT WORK IN READ ONLY MODE:
+✘ Cannot create DB Links
+✘ Cannot create Users/Schemas
+✘ Cannot create Objects
+✘ Validation activities fail
+
+Design Requirements:
+
+* Modern enterprise infographic
+* Clear readable typography
+* Executive presentation quality
+* Use process arrows and lifecycle flow
+* Include rollback/synchronization visual indicators
+* Make the flow easy for CAB, CyberArk, DBA, and Validation teams to understand quickly
