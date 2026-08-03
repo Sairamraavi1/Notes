@@ -1,119 +1,17 @@
-SHORT DESCRIPTION
 
-Elevate: ADG Pause, Schema R Refresh, and DB Link Validation Testing in VPRS/PSERP Environment
+Hi Hayden,
 
-DESCRIPTION
+These incidents were related to filesystem utilization exceeding the configured threshold during high import/export activities. The affected mount points experienced increased usage due to large data movement operations.
 
-As part of Elevate activities, the team will perform a planned pause of Active Data Guard (ADG) replication in VPRS (Cascade DB) to refresh Schema R in PSERP using the latest SAPERP schema data from VPRS.
+Resolution required additional storage to be provisioned by the infrastructure/storage team. Since the storage expansion was dependent on their action, I was unable to release space or resolve the filesystem alerts until the additional capacity was made available. Once the storage was extended and the activity was completed, the filesystem utilization returned to normal and the incidents were closed.
 
-During the same controlled outage/testing window, the team will also conduct DB link validation and query optimization testing using the existing whitelisted service account to support automated validation activities for Sales Order and related validation objects.
+As these were dependency-based activities requiring coordination with another team, the SLA was exceeded while waiting for the required storage allocation.
 
-Activities included:
+Or, if you want a shorter Teams reply:
 
-* Pause ADG replication.
-* Convert VPRS to snapshot standby mode.
-* Export SAPERP schema data from VPRS.
-* Refresh Schema R in PSERP.
-* Resume ADG replication and validate synchronization.
-* Execute DB link validation testing.
-* Perform query optimization/tuning activities.
-* Validate automated validation pipeline execution and working table generation.
+Hi Hayden, these were filesystem alerts triggered during high import/export activity. The affected mount points required additional storage, which had to be provisioned by the infrastructure/storage team. I couldn’t clear the filesystem usage or close the incidents until the storage was extended. Due to this external dependency, the incidents exceeded the SLA before they could be resolved.
 
-JUSTIFICATION
 
-This activity is required to refresh Schema R in PSERP with the latest source data from VPRS and to support ongoing Elevate validation and automation testing activities.
-
-The refresh is necessary to:
-
-* Ensure data consistency between VPRS and PSERP environments.
-* Provide updated source data required for downstream validation and defect remediation testing.
-* Support optimization and validation of automated DB link validation processes before production-aligned execution windows.
-* Validate query execution behavior and working table generation in the actual VPRS/Cascade environment.
-* Reduce execution and performance risks during upcoming cutover and validation activities.
-
-Since VPRS operates in Active Data Guard (ADG) standby mode, a controlled pause of ADG replication is required to safely perform snapshot conversion and export activities.
-
-This is a planned and controlled database activity executed within the Titan/VPRS staging environment with no direct production impact.
-
-IMPLEMENTATION PLAN
-
-Pre-Implementation Validation
-
-1. Validate archive/apply synchronization between Primary, Titan, and VPRS.
-
-2. Validate current database role/open mode:
-   SELECT database_role, open_mode FROM v$database;
-
-3. Validate managed standby/apply status:
-   SELECT process, status FROM v$managed_standby;
-
-4. Validate existing DB link connectivity using approved service account.
-
-Cutover Activities
-
-1. Pause managed standby recovery on VPRS.
-2. Shutdown and mount database.
-3. Convert VPRS to snapshot standby mode.
-4. Open database in read/write mode.
-5. Execute export of SAPERP schema objects required for Schema R refresh.
-6. Refresh Schema R objects in PSERP environment.
-7. Gather required statistics and validate object counts.
-8. Execute DB link validation and query optimization testing using existing whitelisted service account.
-9. Execute automated validation pipeline queries and validate working table generation.
-10. Monitor TEMP, CPU, sessions, and query execution during testing.
-11. Shutdown database and convert VPRS back to physical standby mode.
-12. Resume managed standby recovery.
-13. Validate ADG synchronization and recovery status.
-
-ROLLBACK / BACKOUT PLAN
-
-If any issue occurs during refresh or testing activities:
-
-1. Stop active export/import and DB link testing sessions.
-
-2. Drop/revert temporary working tables if required.
-
-3. Shutdown VPRS instance.
-
-4. Mount database.
-
-5. Convert database back to physical standby mode.
-
-6. Open database in READ ONLY WITH APPLY mode.
-
-7. Resume managed standby recovery:
-   ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DISCONNECT FROM SESSION;
-
-8. Validate:
-   SELECT database_role, open_mode FROM v$database;
-
-9. Validate standby apply health:
-   SELECT process, status FROM v$managed_standby;
-
-10. Confirm no significant lag or instability exists.
-
-If Schema R refresh only partially completes, impacted objects can be reverted or refreshed again during next approved window.
-
-RISK AND IMPACT ANALYSIS
-
-Risk Level: Medium
-
-Potential Risks:
-
-* Temporary ADG replication pause during snapshot conversion.
-* Increased CPU/TEMP utilization during export/import and query optimization activities.
-* Long-running DB link validation queries may increase resource consumption.
-* Extended outage window if refresh or testing exceeds estimated duration.
-
-Mitigation:
-
-* Activity limited to Titan/VPRS staging environment only.
-* Continuous DBA monitoring throughout implementation.
-* Existing validated service account will be used for DB link testing.
-* Queries and sessions can be terminated immediately if abnormal utilization occurs.
-* Full rollback procedure available to restore ADG standby configuration.
-
-No direct production user impact is expected.
 
 TEST PLAN
 
