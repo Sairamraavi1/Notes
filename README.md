@@ -1,89 +1,159 @@
-
-Hi Hayden,
-
-These incidents were related to filesystem utilization exceeding the configured threshold during high import/export activities. The affected mount points experienced increased usage due to large data movement operations.
-
-Resolution required additional storage to be provisioned by the infrastructure/storage team. Since the storage expansion was dependent on their action, I was unable to release space or resolve the filesystem alerts until the additional capacity was made available. Once the storage was extended and the activity was completed, the filesystem utilization returned to normal and the incidents were closed.
-
-As these were dependency-based activities requiring coordination with another team, the SLA was exceeded while waiting for the required storage allocation.
-
-Or, if you want a shorter Teams reply:
-
-Hi Hayden, these were filesystem alerts triggered during high import/export activity. The affected mount points required additional storage, which had to be provisioned by the infrastructure/storage team. I couldn’t clear the filesystem usage or close the incidents until the storage was extended. Due to this external dependency, the incidents exceeded the SLA before they could be resolved.
+if want to do something like lead generating bringing data from multiple sources and that work i am doing it manually and want to help and also make money on it for this kind of idea what are main things is required Idea ? Clarity ? Financially ? work ? pricing ? minimum MVP, know the market how to do it ? it can be automated or not or only manually if works does it worth of doing still? how to start ? this is for finding leads in WhatsApp and Facebook telegram people keeps posting there and finding roommates in USA problem here is all of the people can't be in all the groups and they may don't know the complete information we have similar thing in us like Suleka but it's too costly subscription based so I am pay as you go system initially giving 2-5 leads as free and later gone charge them so in this how to build an proper system for this and first start what will the strong foundation for this and were to start just sharing what I had in my mind validate and also share the best ideas and inputs from your side  and also my main idea is these because if people have maximum options and then they find the right one like-minded more choices so that it may help for their carrier to suppose for an IT guy needs similar one they share knowledge and grow likewise student and job trail candidates and thing like that they be more beneficiary with those this is the main point from me 
 
 
 
-TEST PLAN
 
-Objective:
-Validate successful Schema R refresh, ADG recovery resumption, DB link functionality, and automated validation query execution.
 
-Validation Steps:
+In short:
 
-1. Validate database role/open mode after recovery.
-2. Validate Schema R object counts and sample data.
-3. Validate invalid object count.
-4. Validate ADG managed recovery status.
-5. Validate DB link connectivity and query execution.
-6. Validate working table generation through validation pipeline.
-7. Validate query execution timings and stability.
-8. Validate no ORA-03113 or DB link disconnect errors.
-9. Validate standby synchronization health post activity.
-
-Success Criteria:
-
-* Schema R refresh completed successfully.
-* ADG resumed successfully with healthy apply status.
-* DB link queries completed successfully.
-* Working tables generated successfully.
-* No database instability observed.
-* Validation queries completed within expected thresholds.
-
-COMMUNICATION PLAN
-
-* Provide implementation updates every 15–30 minutes during activity window.
-* Notify stakeholders upon Schema R refresh completion.
-* Notify stakeholders after DB link validation/testing completion.
-* Escalate immediately if abnormal database or ADG behavior is identified.
+You don’t need money to start a lead generation business.
 
 
 
-ROLLBACK / BACKOUT PLAN
+* Test it with free tools (Google Forms + free website).
 
-If any issue occurs during Schema R refresh, ADG recovery, or DB link testing activities, the following rollback steps will be performed immediately to restore the environment to stable standby mode.
+* Connect demand (customers) with supply (service providers).
 
-1. Stop active export/import and DB link testing sessions.
+* Monetize with pay-per-lead or subscriptions once value is proven.
 
-2. Terminate long-running sessions if excessive resource utilization is observed.
 
-3. Shutdown VPRS database:
-   SHUTDOWN IMMEDIATE;
 
-4. Mount database:
-   STARTUP MOUNT;
+ 
 
-5. Convert snapshot standby back to physical standby:
-   ALTER DATABASE CONVERT TO PHYSICAL STANDBY;
+🛠 Step 1: Create a Google Form (Free Tool)
 
-6. Restart database and resume ADG apply:
-   ALTER DATABASE RECOVER MANAGED STANDBY DATABASE DISCONNECT FROM SESSION;
+Google Forms is a free tool by Google to collect information (like a survey or signup form).
 
-7. Validate database status:
-   SELECT database_role, open_mode FROM v$database;
+👉 How to create one:
 
-Expected Result:
 
-* DATABASE_ROLE = PHYSICAL STANDBY
-* OPEN_MODE = READ ONLY WITH APPLY
 
-8. Validate managed recovery/apply status:
-   SELECT process, status FROM v$managed_standby;
+1. Go to forms.google.com.
 
-9. Drop/revert incomplete temporary working tables if required.
+2. Click Blank Form ➝ give it a title:
 
-10. Validate Schema R object availability and confirm database stability.
+   * Example: “Find a Roommate in USA – Free Service”
 
-If Schema R refresh partially completes, impacted objects can be reverted or refreshed again during the next approved maintenance window.
+3. Add questions (choose short answer type):
 
-Estimated rollback completion time: 30–45 minutes.
+   * Name
 
+   * Email / Phone number
+
+   * City & State
+
+   * What type of room/house are you looking for? (shared, private, etc.)
+
+   * Budget
+
+   * When do you need it?
+
+4. Click the palette icon 🎨 to customize design (optional).
+
+5. At the top right, click Send ➝ Get Link.
+
+   * Shorten the link (there’s a checkbox).
+
+   * Example final link: https://forms.gle/abc123xyz
+
+
+
+✅ Now you have your “lead capture form” ready.
+
+ 
+
+🛠 Step 2: Share the Form (Free Marketing)
+
+You need people to fill the form. Share it where your target users are:
+
+
+
+1. Facebook Groups
+
+   * Search: “Indians in Dallas”, “Roommates in USA”, “Apartments in New Jersey”.
+
+   * Post:
+
+“Looking for a roommate or rental in [city]? Fill this quick form — I’ll connect you with available options: [form link]”
+
+2. WhatsApp & Telegram Groups
+
+   * Join “Indians in USA”, “Roommate finders” groups.
+
+   * Share the form with a short message.
+
+3. Reddit
+
+   * Subreddits like r/USC, r/immigration, r/AskNYC, or city-specific forums.
+
+4. Craigslist (Housing section)
+
+   * Post your form link as a way to “get matched faster.”
+
+
+
+ 
+
+🛠 Step 3: Collect Leads
+
+
+
+* Every time someone fills the form, their details go into a Google Sheet automatically (linked to the form).
+
+* Example: John Doe fills “Need roommate in Irving, TX, budget $800, move-in date Nov 15.”
+
+* You now have a lead ✅
+
+
+
+ 
+
+🛠 Step 4: Connect Leads to Service Providers
+
+
+
+* Find landlords, leasing agents, or people already renting out rooms (Facebook Marketplace, Craigslist, local brokers).
+
+* Message them:
+
+“Hi, I run a free roommate-finding service. I have someone looking for a room in Irving, TX for $800 budget. Would you like me to connect them with you?”
+
+* If they say yes, you connect them (for free at first).
+
+* After a few matches work, tell them:
+
+“From next month, I charge $5 per lead or $50/month subscription to send you unlimited leads.”
+
+
+
+ 
+
+💰 Step 5: How You Earn Without Investment
+
+
+
+1. Pay-per-lead → $5–$20 per lead.
+
+2. Monthly subscription → $50–$200 for unlimited leads.
+
+3. Advertising later → once your site has traffic, run Google AdSense.
+
+
+
+ 
+
+✅ Example in Action
+
+Imagine:
+
+
+
+* You share your Google Form in 5 Facebook groups.
+
+* 20 people fill it in the first week.
+
+* You forward these leads to 5 landlords in Texas.
+
+* 2 landlords get successful renters → they’re happy.
+
+* Next week, you tell them: “Now I’ll continue sending leads if you subscribe ($50/month).”
